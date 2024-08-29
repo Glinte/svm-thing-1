@@ -1,0 +1,20 @@
+[project]
+name = "hw1"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.1.0",
+    "scikit-learn>=1.5.1",
+    "pillow>=10.4.0",
+    "pyright>=1.1.378",
+    "pandas>=2.2.2",
+    "types-pillow>=10.2.0.20240822",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pyright]
