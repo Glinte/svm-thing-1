@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import Sequence
 from typing import TypedDict, TYPE_CHECKING
 import pickle
@@ -122,16 +123,20 @@ def find_best_k(
     best_k = 0
     best_score = 0
     for k in range(1, 10):
-        classifier = KNeighborsClassifier(n_neighbors=k, p=p, metric=metric).fit(train_X, train_y)
+        classifier = KNeighborsClassifier(n_neighbors=k, p=p, metric=metric, n_jobs=-1).fit(train_X, train_y)
         score = metrics.f1_score(test_y, classifier.predict(test_X), average='macro')
         if score > best_score:
             best_score = score
             best_k = k
+    print(f"Best k: {best_k}, F1 score: {best_score}")
     return best_k
 
-
 def main():
-    print(metrics.classification_report(test_data["labels"], classify(test_data["data"]), target_names=label_names, digits=4))
+    find_best_k(
+        test_X=test_data["data"][0:1000],
+        test_y=test_data["labels"][0:1000],
+        p=1,
+    )
 
 
 if __name__ == "__main__":
