@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import logging
+import os.path
 from collections.abc import Sequence
-from typing import TypedDict, TYPE_CHECKING
+from typing import TypedDict, TYPE_CHECKING, Literal, cast, Any
 import pickle
 import random
 
 import numpy as np
+import xxhash
+from annoy import AnnoyIndex
 from sklearn import metrics
 from sklearn.neighbors import KNeighborsClassifier
 from PIL import Image
@@ -18,6 +20,8 @@ if TYPE_CHECKING:
 
 
 N_NEIGHBORS = 1  # Experimentally determined to be the best number of neighbors
+
+Metric = Literal['angular', 'euclidean', 'manhattan', 'hamming', 'dot']
 
 class Data(TypedDict):
     batch_label: bytes
@@ -89,15 +93,17 @@ def visualize_data_as_image(data: Data) -> ImageType:
     return combine_images_vertically(label_images)
 
 
-def visualize_single_image(data: Sequence[bytes]) -> ImageType:
+def visualize_single_image(data: Sequence[bytes | int | float]) -> ImageType:
     """Visualize a single image."""
-    image = Image.fromarray(np.array(data).reshape(3, 32, 32).transpose(1, 2, 0))
+
+    image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
     image.show()
     return image
 
 
 def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:
     """Classify some data using the K-Nearest Neighbors algorithm, with all the training data."""
+
     classifier = KNeighborsClassifier(n_neighbors=N_NEIGHBORS, p=p).fit(train_data, train_labels)
     prediction: np.ndarray[tuple[int], np.dtype[np.uint8]] = classifier.predict(X)
     return prediction
@@ -108,9 +114,13 @@ def find_best_k(
     train_y: npt.ArrayLike | None = None,
     test_X: npt.ArrayLike | None = None,
     test_y: npt.ArrayLike | None = None,
-    metric: str = "minkowski",
-    p: int = 2,
+    classifier_cls: type[KNeighborsClassifier] | type[AnnoyClassifier] | None = None,
+    init_kwargs: dict[str, Any] | None = None,
 ) -> int:
+    """Find the best k for the K-Nearest Neighbors algorithm."""
+    if classifier_cls is None:
+        raise ValueError("classifier_cls must be provided.")
+
     if train_X is None:
         train_X = train_data
     if train_y is None:
@@ -123,20 +133,90 @@ def find_best_k(
     best_k = 0
     best_score = 0
     for k in range(1, 10):
-        classifier = KNeighborsClassifier(n_neighbors=k, p=p, metric=metric, n_jobs=-1).fit(train_X, train_y)
-        score = metrics.f1_score(test_y, classifier.predict(test_X), average='macro')
+        if issubclass(classifier_cls, (KNeighborsClassifier, AnnoyClassifier)):
+            classifier = classifier_cls(n_neighbors=k, **(init_kwargs or {}))
+            classifier.fit(train_X, train_y)
+            y_pred = classifier.predict(test_X)
+        else:
+            raise ValueError("Invalid classifier.")
+        score = metrics.f1_score(test_y, y_pred, average='macro')
+        print(f"k: {k}, F1 score: {score}")
         if score > best_score:
             best_score = score
             best_k = k
     print(f"Best k: {best_k}, F1 score: {best_score}")
     return best_k
 
+
+class AnnoyClassifier:
+    """K-Nearest Neighbors classifier using the Annoy library."""
+    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 200, n_neighbors: int = 1):
+        self.weights = weights
+        self.metric: Metric = metric
+        self.num_trees = num_trees
+        self.n_neighbors = n_neighbors
+        self.index: AnnoyIndex | None = None
+        self.labels: np.ndarray | None = None
+
+    def fit(self, X: npt.ArrayLike, y: npt.ArrayLike) -> AnnoyClassifier:
+        """Fit the model."""
+
+        self.labels = np.array(y)
+        self.index = build_index(X, metric=self.metric, num_trees=self.num_trees)
+        return self
+
+    def predict(self, X: npt.ArrayLike) -> np.ndarray[tuple[int], np.dtype[np.int32]]:
+        """Predict the labels of the data."""
+
+        if self.index is None:
+            raise ValueError("Index must be built first.")
+        assert self.labels is not None
+
+        X = np.array(X)
+        include_distances = self.weights == "distance"
+        y_pred = np.zeros(shape=(len(X),), dtype=np.int32)
+        for i, vec in enumerate(np.array(X)):
+            if include_distances:
+                include_distances = cast(Literal[True], include_distances)
+                nns, distances = self.index.get_nns_by_vector(vec, self.n_neighbors, include_distances=include_distances)
+            else:
+                include_distances = cast(Literal[False], include_distances)
+                nns = self.index.get_nns_by_vector(vec, self.n_neighbors, include_distances=include_distances)
+            nn_labels = [self.labels[idx] for idx in nns]
+
+            if include_distances:
+                # Weighted voting
+                weights = 1 / np.array(distances)  # pyright: ignore[reportPossiblyUnboundVariable]
+                y_pred[i] = np.argmax(np.bincount(nn_labels, weights=weights))
+            else:
+                y_pred[i] = np.argmax(np.bincount(nn_labels))
+
+        return y_pred
+
+
+def build_index(
+    data: npt.ArrayLike,
+    metric: Metric = "euclidean",
+    num_trees: int = 200
+) -> AnnoyIndex:
+    """Build an Annoy index if it doesn't exist, otherwise simply loads it."""
+
+    index = AnnoyIndex(3072, metric)
+    data_hash = xxhash.xxh64(data).hexdigest()  # type: ignore
+    index_path = f'index_{metric}_{num_trees}_{data_hash}.ann'
+    if os.path.exists(index_path):
+        index.load(index_path)
+    else:
+        data = np.array(data)
+        for i, vec in enumerate(data):
+            index.add_item(i, vec)
+        index.build(num_trees)
+        index.save(index_path)
+    return index
+
+
 def main():
-    find_best_k(
-        test_X=test_data["data"][0:1000],
-        test_y=test_data["labels"][0:1000],
-        p=1,
-    )
+    find_best_k(classifier_cls=AnnoyClassifier, init_kwargs={"metric": "angular"})
 
 
 if __name__ == "__main__":
