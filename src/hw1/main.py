@@ -196,7 +196,7 @@ def find_best_k_with_cross_validation(
 
 class AnnoyClassifier:
     """K-Nearest Neighbors classifier using the Annoy library."""
-    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = 1, save_index: bool = True):
+    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = 3, save_index: bool = True):
         self.weights = weights
         self.metric: Metric = metric
         self.num_trees = num_trees
