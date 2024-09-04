@@ -110,45 +110,6 @@ def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np
     return prediction
 
 
-def find_best_k(
-    X_train: npt.ArrayLike | None = None,
-    y_train: npt.ArrayLike | None = None,
-    X_test: npt.ArrayLike | None = None,
-    y_test: npt.ArrayLike | None = None,
-    classifier_cls: type[KNeighborsClassifier] | type[AnnoyClassifier] | None = None,
-    init_kwargs: dict[str, Any] | None = None,
-) -> int:
-    """Find the best k for the K-Nearest Neighbors algorithm."""
-    if classifier_cls is None:
-        raise ValueError("classifier_cls must be provided.")
-
-    if X_train is None:
-        X_train = train_data
-    if y_train is None:
-        y_train = train_labels
-    if X_test is None:
-        X_test = test_data["data"]
-    if y_test is None:
-        y_test = test_data["labels"]
-
-    best_k = 0
-    best_score = 0
-    for k in range(1, 10):
-        if issubclass(classifier_cls, (KNeighborsClassifier, AnnoyClassifier)):
-            classifier = classifier_cls(n_neighbors=k, **(init_kwargs or {}))
-            classifier.fit(X_train, y_train)
-            y_pred = classifier.predict(X_test)
-        else:
-            raise ValueError("Invalid classifier.")
-        score = metrics.f1_score(y_test, y_pred, average='macro')
-        print(f"k: {k}, F1 score: {score}")
-        if score > best_score:
-            best_score = score
-            best_k = k
-    print(f"Best k: {best_k}, F1 score: {best_score}")
-    return best_k
-
-
 def find_best_k_with_cross_validation(
     X: npt.ArrayLike,
     y: npt.ArrayLike,
