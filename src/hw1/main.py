@@ -10,6 +10,7 @@ import numpy as np
 import xxhash
 from annoy import AnnoyIndex
 from sklearn import metrics
+from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from PIL import Image
 
@@ -110,10 +111,10 @@ def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np
 
 
 def find_best_k(
-    train_X: npt.ArrayLike | None = None,
-    train_y: npt.ArrayLike | None = None,
-    test_X: npt.ArrayLike | None = None,
-    test_y: npt.ArrayLike | None = None,
+    X_train: npt.ArrayLike | None = None,
+    y_train: npt.ArrayLike | None = None,
+    X_test: npt.ArrayLike | None = None,
+    y_test: npt.ArrayLike | None = None,
     classifier_cls: type[KNeighborsClassifier] | type[AnnoyClassifier] | None = None,
     init_kwargs: dict[str, Any] | None = None,
 ) -> int:
@@ -121,25 +122,25 @@ def find_best_k(
     if classifier_cls is None:
         raise ValueError("classifier_cls must be provided.")
 
-    if train_X is None:
-        train_X = train_data
-    if train_y is None:
-        train_y = train_labels
-    if test_X is None:
-        test_X = test_data["data"]
-    if test_y is None:
-        test_y = test_data["labels"]
+    if X_train is None:
+        X_train = train_data
+    if y_train is None:
+        y_train = train_labels
+    if X_test is None:
+        X_test = test_data["data"]
+    if y_test is None:
+        y_test = test_data["labels"]
 
     best_k = 0
     best_score = 0
     for k in range(1, 10):
         if issubclass(classifier_cls, (KNeighborsClassifier, AnnoyClassifier)):
             classifier = classifier_cls(n_neighbors=k, **(init_kwargs or {}))
-            classifier.fit(train_X, train_y)
-            y_pred = classifier.predict(test_X)
+            classifier.fit(X_train, y_train)
+            y_pred = classifier.predict(X_test)
         else:
             raise ValueError("Invalid classifier.")
-        score = metrics.f1_score(test_y, y_pred, average='macro')
+        score = metrics.f1_score(y_test, y_pred, average='macro')
         print(f"k: {k}, F1 score: {score}")
         if score > best_score:
             best_score = score
@@ -148,9 +149,54 @@ def find_best_k(
     return best_k
 
 
+def find_best_k_with_cross_validation(
+    X: npt.ArrayLike,
+    y: npt.ArrayLike,
+    classifier_cls: type[KNeighborsClassifier] | type[AnnoyClassifier] | None = None,
+    init_kwargs: dict[str, Any] | None = None,
+    n_splits: int = 5,
+) -> int:
+    """Find the best k for the K-Nearest Neighbors algorithm using cross-validation.
+
+    Args:
+        X: The data.
+        y: The labels.
+        classifier_cls: The classifier class.
+        init_kwargs: The initialization keyword arguments.
+        n_splits: The number of splits. This is the number of times the data is split into training and testing sets to do cross-validation.
+    """
+    if classifier_cls is None:
+        raise ValueError("classifier_cls must be provided.")
+
+    best_k = 0
+    best_score = 0
+    for k in range(1, 10):
+        scores = []
+
+        for i in range(n_splits):
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, train_size=0.9, shuffle=True, random_state=42+i)  # Fixed random state for reproducibility and caching
+            if issubclass(classifier_cls, (KNeighborsClassifier, AnnoyClassifier)):
+                classifier = classifier_cls(n_neighbors=k, **(init_kwargs or {}))
+            else:
+                raise ValueError("Invalid classifier.")
+            classifier.fit(X_train, y_train)
+            y_pred = classifier.predict(X_test)
+            score = metrics.f1_score(y_test, y_pred, average='macro')
+            print(f"k: {k}, test: {i+1}, F1 score: {score}")
+            scores.append(score)
+
+        avg_score = np.mean(scores)
+        print(f"k: {k}, F1 score: {avg_score}")
+        if avg_score > best_score:
+            best_score = avg_score
+            best_k = k
+    print(f"Best k: {best_k}, F1 score: {best_score}")
+    return best_k
+
+
 class AnnoyClassifier:
     """K-Nearest Neighbors classifier using the Annoy library."""
-    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 200, n_neighbors: int = 1):
+    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = 1):
         self.weights = weights
         self.metric: Metric = metric
         self.num_trees = num_trees
@@ -172,7 +218,7 @@ class AnnoyClassifier:
             raise ValueError("Index must be built first.")
         assert self.labels is not None
 
-        X = np.array(X)
+        X = np.asarray(X)
         include_distances = self.weights == "distance"
         y_pred = np.zeros(shape=(len(X),), dtype=np.int32)
         for i, vec in enumerate(np.array(X)):
@@ -197,7 +243,8 @@ class AnnoyClassifier:
 def build_index(
     data: npt.ArrayLike,
     metric: Metric = "euclidean",
-    num_trees: int = 200
+    num_trees: int = 20,
+    save_index: bool = True,
 ) -> AnnoyIndex:
     """Build an Annoy index if it doesn't exist, otherwise simply loads it."""
 
@@ -207,16 +254,22 @@ def build_index(
     if os.path.exists(index_path):
         index.load(index_path)
     else:
-        data = np.array(data)
+        data = np.asarray(data)
         for i, vec in enumerate(data):
             index.add_item(i, vec)
         index.build(num_trees)
-        index.save(index_path)
+        if save_index:
+            index.save(index_path)
     return index
 
 
 def main():
-    find_best_k(classifier_cls=AnnoyClassifier, init_kwargs={"metric": "angular"})
+    find_best_k_with_cross_validation(
+        X=train_data,
+        y=train_labels,
+        classifier_cls=AnnoyClassifier,
+        init_kwargs={"metric": "angular", "weights": "distance", "num_trees": 20}
+    )
 
 
 if __name__ == "__main__":
