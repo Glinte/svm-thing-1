@@ -82,7 +82,7 @@ def combine_images_vertically(images: Sequence[ImageType]) -> ImageType:
     return new_image
 
 
-def visualize_data_as_image(data: Data) -> ImageType:
+def visualize_dataset_as_image(data: Data) -> ImageType:
     """Visualize the data as an image."""
     images = data["data"].reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
     label_images = []
