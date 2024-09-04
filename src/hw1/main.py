@@ -31,7 +31,9 @@ data_4 = unpickle_data('cifar-10-batches-py/data_batch_4')
 data_5 = unpickle_data('cifar-10-batches-py/data_batch_5')
 train_data = np.concatenate((data_1["data"], data_2["data"], data_3["data"], data_4["data"], data_5["data"]))
 train_labels = np.concatenate((data_1["labels"], data_2["labels"], data_3["labels"], data_4["labels"], data_5["labels"]))
-test_data = unpickle_data('cifar-10-batches-py/test_batch')
+_test_data = unpickle_data('cifar-10-batches-py/test_batch')
+test_data = _test_data["data"]
+test_labels = _test_data["labels"]
 
 
 def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:
