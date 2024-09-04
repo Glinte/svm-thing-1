@@ -4,7 +4,6 @@ import os.path
 from collections.abc import Sequence
 from typing import TypedDict, TYPE_CHECKING, Literal, cast, Any
 import pickle
-import random
 
 import numpy as np
 import xxhash
@@ -80,26 +79,6 @@ def combine_images_vertically(images: Sequence[ImageType]) -> ImageType:
         y_offset += image.size[1]
 
     return new_image
-
-
-def visualize_dataset_as_image(data: Data) -> ImageType:
-    """Visualize the data as an image."""
-    images = data["data"].reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
-    label_images = []
-    for label_idx, _ in enumerate(label_names):
-        # Choose 10 random images of the label
-        images_of_label = [image for image, image_label in zip(images, data["labels"]) if image_label == label_idx]
-        rand_10_images = [Image.fromarray(i) for i in random.choices(images_of_label, k=10)]
-        label_images.append(combine_images_horizontally(rand_10_images))
-    return combine_images_vertically(label_images)
-
-
-def visualize_single_image(data: Sequence[bytes | int | float]) -> ImageType:
-    """Visualize a single image."""
-
-    image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
-    image.show()
-    return image
 
 
 def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:
