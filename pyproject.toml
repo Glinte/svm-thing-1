@@ -13,6 +13,8 @@ dependencies = [
     "types-pillow>=10.2.0.20240822",
     "annoy>=1.17.3",
     "xxhash>=3.5.0",
+    "matplotlib>=3.9.2",
+    "pip>=24.2",
 ]
 
 [build-system]

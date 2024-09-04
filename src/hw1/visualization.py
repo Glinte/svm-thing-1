@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 import random
-from typing import Sequence
+from typing import Sequence, TYPE_CHECKING
 
 import numpy as np
 from PIL import Image
 from PIL.Image import Image as ImageType
+import matplotlib as mpl
+from matplotlib import pyplot as plt
+from sklearn.decomposition import PCA
 
-from src.hw1.main import label_names
+from src.hw1.main import label_names, train_data, train_labels, test_data, test_labels
 from src.hw1 import Data
 
+if TYPE_CHECKING:
+    import numpy.typing as npt
+    from typings.sklearn._typing import MatrixLike
 
 def visualize_dataset_as_image(data: Data) -> ImageType:
     """Visualize the data as an image."""
@@ -59,3 +65,32 @@ def combine_images_vertically(images: Sequence[ImageType]) -> ImageType:
         y_offset += image.size[1]
 
     return new_image
+
+
+def PCA_visualization(X: MatrixLike, y: npt.ArrayLike) -> None:
+    """Visualize the data using PCA."""
+
+    # Set matplotlib to be interactive
+    mpl.use("Qt5Agg")
+    plt.ion()
+
+    pca = PCA(n_components=3)
+    X_r = pca.fit_transform(X)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    colors = ['navy', 'turquoise', 'darkorange', 'red', 'green', 'blue', 'purple', 'yellow', 'black', 'pink']
+    for i, target_name in enumerate(label_names):
+        ax.scatter(X_r[y == i, 0], X_r[y == i, 1], X_r[y == i, 2], color=colors[i], label=target_name)
+    ax.legend(loc='best', shadow=False, scatterpoints=1)
+    ax.set_title('PCA of CIFAR-10 dataset')
+    plt.show(block=True)
+
+
+def main():
+    PCA_visualization(train_data[:1000], train_labels[:1000])
+
+
+if __name__ == "__main__":
+    main()
