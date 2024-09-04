@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os.path
-from collections.abc import Sequence
 from typing import TypedDict, TYPE_CHECKING, Literal, cast, Any
 import pickle
 
@@ -11,15 +10,13 @@ from annoy import AnnoyIndex
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from PIL import Image
 
 if TYPE_CHECKING:
     from os import PathLike
-    from PIL.Image import Image as ImageType
     import numpy.typing as npt
 
 
-N_NEIGHBORS = 1  # Experimentally determined to be the best number of neighbors
+N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
 
 Metric = Literal['angular', 'euclidean', 'manhattan', 'hamming', 'dot']
 
@@ -49,36 +46,6 @@ data_5 = unpickle_data('cifar-10-batches-py/data_batch_5')
 train_data = np.concatenate((data_1["data"], data_2["data"], data_3["data"], data_4["data"], data_5["data"]))
 train_labels = np.concatenate((data_1["labels"], data_2["labels"], data_3["labels"], data_4["labels"], data_5["labels"]))
 test_data = unpickle_data('cifar-10-batches-py/test_batch')
-
-
-def combine_images_horizontally(images: Sequence[ImageType]) -> ImageType:
-    """Combine images horizontally."""
-    widths, heights = zip(*(i.size for i in images))
-    total_width = sum(widths)
-    max_height = max(heights)
-
-    new_image = Image.new('RGB', (total_width, max_height))
-    x_offset = 0
-    for image in images:
-        new_image.paste(image, (x_offset, 0))
-        x_offset += image.size[0]
-
-    return new_image
-
-
-def combine_images_vertically(images: Sequence[ImageType]) -> ImageType:
-    """Combine images vertically."""
-    widths, heights = zip(*(i.size for i in images))
-    max_width = max(widths)
-    total_height = sum(heights)
-
-    new_image = Image.new('RGB', (max_width, total_height))
-    y_offset = 0
-    for image in images:
-        new_image.paste(image, (0, y_offset))
-        y_offset += image.size[1]
-
-    return new_image
 
 
 def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:
@@ -136,7 +103,7 @@ def find_best_k_with_cross_validation(
 
 class AnnoyClassifier:
     """K-Nearest Neighbors classifier using the Annoy library."""
-    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = 3, save_index: bool = True):
+    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = N_NEIGHBORS, save_index: bool = True):
         self.weights = weights
         self.metric: Metric = metric
         self.num_trees = num_trees

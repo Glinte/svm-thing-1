@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 from PIL.Image import Image as ImageType
 
-from src.hw1.main import Data, label_names, combine_images_horizontally, combine_images_vertically
+from src.hw1.main import Data, label_names
 
 
 def visualize_dataset_as_image(data: Data) -> ImageType:
@@ -28,3 +28,33 @@ def visualize_single_image(data: Sequence[bytes | int | float]) -> ImageType:
     image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
     image.show()
     return image
+
+
+def combine_images_horizontally(images: Sequence[ImageType]) -> ImageType:
+    """Combine images horizontally."""
+    widths, heights = zip(*(i.size for i in images))
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    new_image = Image.new('RGB', (total_width, max_height))
+    x_offset = 0
+    for image in images:
+        new_image.paste(image, (x_offset, 0))
+        x_offset += image.size[0]
+
+    return new_image
+
+
+def combine_images_vertically(images: Sequence[ImageType]) -> ImageType:
+    """Combine images vertically."""
+    widths, heights = zip(*(i.size for i in images))
+    max_width = max(widths)
+    total_height = sum(heights)
+
+    new_image = Image.new('RGB', (max_width, total_height))
+    y_offset = 0
+    for image in images:
+        new_image.paste(image, (0, y_offset))
+        y_offset += image.size[1]
+
+    return new_image
