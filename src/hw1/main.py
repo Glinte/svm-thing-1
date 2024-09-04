@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import os.path
-from typing import TypedDict, TYPE_CHECKING, Literal, cast, Any
-import pickle
+from typing import TYPE_CHECKING, Literal, cast, Any
 
 import numpy as np
 import xxhash
@@ -11,28 +10,15 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 
+from src.hw1 import unpickle_data
+
 if TYPE_CHECKING:
-    from os import PathLike
     import numpy.typing as npt
 
 
 N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
 
 Metric = Literal['angular', 'euclidean', 'manhattan', 'hamming', 'dot']
-
-class Data(TypedDict):
-    batch_label: bytes
-    labels: list[int]
-    data: np.ndarray[tuple[int, int], np.dtype[np.uint8]]  # Shape: (number_images, 32 * 32 * 3 = 3072)
-    filenames: list[bytes]
-
-
-def unpickle_data(fp: str | bytes | PathLike[str] | PathLike[bytes]) -> Data:
-    """Unpickle the CIFAR-10 dataset."""
-    with open(fp, 'rb') as fo:
-        dict = pickle.load(fo, encoding='bytes')
-    return {k.decode(): v for k, v in dict.items()}  # Convert bytes key to string key  # type: ignore
-
 
 # From cifar-10-batches-py/batches.meta
 batches_metadata = {'label_names': ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck'], 'num_cases_per_batch': 10000, 'num_vis': 3072}

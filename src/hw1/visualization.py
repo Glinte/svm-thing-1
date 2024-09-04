@@ -7,7 +7,8 @@ import numpy as np
 from PIL import Image
 from PIL.Image import Image as ImageType
 
-from src.hw1.main import Data, label_names
+from src.hw1.main import label_names
+from src.hw1 import Data
 
 
 def visualize_dataset_as_image(data: Data) -> ImageType:
