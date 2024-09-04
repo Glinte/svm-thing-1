@@ -221,24 +221,32 @@ class AnnoyClassifier:
 
         X = np.asarray(X)
         include_distances = self.weights == "distance"
-        y_pred = np.zeros(shape=(len(X),), dtype=np.int32)
-        for i, vec in enumerate(np.array(X)):
-            if include_distances:
-                include_distances = cast(Literal[True], include_distances)
-                nns, distances = self.index.get_nns_by_vector(vec, self.n_neighbors, include_distances=include_distances)
-            else:
-                include_distances = cast(Literal[False], include_distances)
-                nns = self.index.get_nns_by_vector(vec, self.n_neighbors, include_distances=include_distances)
-            nn_labels = [self.labels[idx] for idx in nns]
-
-            if include_distances:
-                # Weighted voting
-                weights = 1 / np.array(distances)  # pyright: ignore[reportPossiblyUnboundVariable]
-                y_pred[i] = np.argmax(np.bincount(nn_labels, weights=weights))
-            else:
-                y_pred[i] = np.argmax(np.bincount(nn_labels))
+        y_pred = np.apply_along_axis(self._predict_single, 1, X, include_distances=include_distances)
 
         return y_pred
+
+    def _predict_single(self, x: np.ndarray[tuple[int], Any], include_distances: bool) -> np.intp:
+        """Predict the label of a single data point."""
+
+        assert self.index is not None
+        assert self.labels is not None
+
+        if include_distances:
+            include_distances = cast(Literal[True], include_distances)
+            nns, distances = self.index.get_nns_by_vector(x, self.n_neighbors, include_distances=include_distances)
+        else:
+            include_distances = cast(Literal[False], include_distances)
+            nns = self.index.get_nns_by_vector(x, self.n_neighbors, include_distances=include_distances)
+        nn_labels = [self.labels[idx] for idx in nns]
+
+        if include_distances:
+            # Weighted voting
+            weights = 1 / np.array(distances)  # pyright: ignore[reportPossiblyUnboundVariable]
+            pred = np.argmax(np.bincount(nn_labels, weights=weights))
+        else:
+            pred = np.argmax(np.bincount(nn_labels))
+
+        return pred
 
 
 def build_index(
@@ -269,7 +277,7 @@ def main():
         X=train_data,
         y=train_labels,
         classifier_cls=AnnoyClassifier,
-        init_kwargs={"metric": "angular", "weights": "distance", "num_trees": 20, "save_index": False},
+        init_kwargs={"metric": "angular", "weights": "distance", "num_trees": 100, "save_index": False},
     )
 
 
