@@ -15,6 +15,7 @@ dependencies = [
     "xxhash>=3.5.0",
     "matplotlib>=3.9.2",
     "pip>=24.2",
+    "torch>=2.4.0",
 ]
 
 [build-system]
