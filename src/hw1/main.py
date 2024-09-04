@@ -196,19 +196,20 @@ def find_best_k_with_cross_validation(
 
 class AnnoyClassifier:
     """K-Nearest Neighbors classifier using the Annoy library."""
-    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = 1):
+    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = 1, save_index: bool = True):
         self.weights = weights
         self.metric: Metric = metric
         self.num_trees = num_trees
         self.n_neighbors = n_neighbors
         self.index: AnnoyIndex | None = None
         self.labels: np.ndarray | None = None
+        self.save_index = save_index
 
     def fit(self, X: npt.ArrayLike, y: npt.ArrayLike) -> AnnoyClassifier:
         """Fit the model."""
 
         self.labels = np.array(y)
-        self.index = build_index(X, metric=self.metric, num_trees=self.num_trees)
+        self.index = build_index(X, metric=self.metric, num_trees=self.num_trees, save_index=self.save_index)
         return self
 
     def predict(self, X: npt.ArrayLike) -> np.ndarray[tuple[int], np.dtype[np.int32]]:
@@ -268,7 +269,7 @@ def main():
         X=train_data,
         y=train_labels,
         classifier_cls=AnnoyClassifier,
-        init_kwargs={"metric": "angular", "weights": "distance", "num_trees": 20}
+        init_kwargs={"metric": "angular", "weights": "distance", "num_trees": 20, "save_index": False},
     )
 
 
