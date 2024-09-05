@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os.path
 from typing import TYPE_CHECKING, Literal, cast, Any
 
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
 
 
 N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
+
+logger = logging.getLogger(__name__)
 
 Metric = Literal['angular', 'euclidean', 'manhattan', 'hamming', 'dot']
 
