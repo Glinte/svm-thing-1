@@ -80,7 +80,7 @@ def find_best_k_with_cross_validation(
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
             score = metrics.f1_score(y_test, y_pred, average='macro')
-            print(f"k: {k}, test: {i+1}, F1 score: {score}")
+            logger.info(f"k: {k}, test: {i+1}, F1 score: {score}")
             scores.append(score)
 
         avg_score = np.mean(scores)
@@ -94,7 +94,7 @@ def find_best_k_with_cross_validation(
 
 class AnnoyClassifier:
     """K-Nearest Neighbors classifier using the Annoy library."""
-    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = N_NEIGHBORS, save_index: bool = True):
+    def __init__(self, weights: Literal["uniform", "distance"] = "uniform", metric: Metric = "euclidean", num_trees: int = 20, n_neighbors: int = N_NEIGHBORS, save_index: bool = False):
         self.weights = weights
         self.metric: Metric = metric
         self.num_trees = num_trees
@@ -151,7 +151,7 @@ def build_index(
     data: npt.ArrayLike,
     metric: Metric = "euclidean",
     num_trees: int = 20,
-    save_index: bool = True,
+    save_index: bool = False,
 ) -> AnnoyIndex:
     """Build an Annoy index if it doesn't exist, otherwise simply loads it."""
 
