@@ -37,6 +37,14 @@ def visualize_rgb_image(data: Sequence[bytes | int | float]) -> ImageType:
     return image
 
 
+def visualize_grayscale_image(data: Sequence[bytes | int | float]) -> ImageType:
+    """Visualize a single grayscale image."""
+
+    image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(32, 32))
+    image.show()
+    return image
+
+
 def combine_images_horizontally(images: Sequence[ImageType]) -> ImageType:
     """Combine images horizontally."""
     widths, heights = zip(*(i.size for i in images))
