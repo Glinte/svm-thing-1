@@ -29,8 +29,8 @@ def visualize_dataset_as_image(data: Data) -> ImageType:
     return combine_images_vertically(label_images)
 
 
-def visualize_single_image(data: Sequence[bytes | int | float]) -> ImageType:
-    """Visualize a single image."""
+def visualize_rgb_image(data: Sequence[bytes | int | float]) -> ImageType:
+    """Visualize a single RGB image."""
 
     image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
     image.show()
