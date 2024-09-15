@@ -1,23 +1,26 @@
 from __future__ import annotations
 
 import random
-from typing import Sequence, TYPE_CHECKING
+from typing import Sequence, TYPE_CHECKING, Any, Annotated
 
 import numpy as np
 from PIL import Image
 from PIL.Image import Image as ImageType
 import matplotlib as mpl
+from beartype import beartype
+from beartype.vale import Is
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 
-from src.hw1.main import label_names, train_data, train_labels, test_data, test_labels
-from src.hw1 import Data
+from src.hw1.main import label_names, train_data, train_labels
+from src.hw1 import DataDict
 
 if TYPE_CHECKING:
     import numpy.typing as npt
     from typings.sklearn._typing import MatrixLike
 
-def visualize_dataset_as_image(data: Data) -> ImageType:
+
+def visualize_dataset_as_image(data: DataDict) -> ImageType:
     """Visualize the data as an image."""
     images = data["data"].reshape(-1, 3, 32, 32).transpose(0, 2, 3, 1)
     label_images = []
@@ -37,10 +40,11 @@ def visualize_rgb_image(data: Sequence[bytes | int | float]) -> ImageType:
     return image
 
 
-def visualize_grayscale_image(data: Sequence[bytes | int | float]) -> ImageType:
-    """Visualize a single grayscale image."""
+@beartype
+def visualize_grayscale_image(data: Annotated[np.ndarray[Any, np.dtype[Any]], Is[lambda data: data.size == 1024]]) -> ImageType:
+    """Visualize a single 32x32 grayscale image."""
 
-    image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(32, 32))
+    image = Image.fromarray(data.astype(np.uint8).reshape(32, 32))
     image.show()
     return image
 
