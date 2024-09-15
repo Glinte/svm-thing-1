@@ -10,7 +10,7 @@ import numpy as np
 
 type N_IMAGES = int
 type N_PIXELS = Literal[3072]
-type Data = np.ndarray[tuple[N_IMAGES, N_PIXELS], np.dtype[np.uint8]]  # Shape: (number_images, 32 * 32 * 3 = 3072)
+Data = np.ndarray[tuple[N_IMAGES, N_PIXELS], np.dtype[np.uint8]]  # Shape: (number_images, 32 * 32 * 3 = 3072)
 
 
 class DataDict(TypedDict):
