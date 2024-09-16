@@ -61,13 +61,15 @@ def rgb_to_grayscale(image_rgb):
 def detect_edges_canny[Batch: int, Height: int, Width: int](
     image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]],
     *,
+    sigma: float = 0.8,
     low_threshold: int = 100,
-    high_threshold: int = 200
+    high_threshold: int = 200,
 ) -> np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]]:
     """Detect edges in an image using the Canny edge detector.
 
     Args:
         image_rgb: Input RGB image tensor of shape (Batch, 3, H, W)
+        sigma (float): Standard deviation of the Gaussian filter
         low_threshold (int): Lower threshold for the hysteresis procedure
         high_threshold (int): Higher threshold for the hysteresis procedure
 
@@ -78,16 +80,22 @@ def detect_edges_canny[Batch: int, Height: int, Width: int](
 
     edges: np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]] = np.zeros_like(image_gray, dtype=bool)
     for n in range(image_rgb.shape[0]):
-        edges[n] = feature.canny(image_gray[n], 1, low_threshold, high_threshold)
+        edges[n] = feature.canny(image_gray[n], sigma, low_threshold, high_threshold)
     return edges
 
 
 def main():
     """Quick testing, not part of the library."""
+    from timeit import default_timer as timer
+    logging.basicConfig(level=logging.INFO)
+    N_SAMPLES = 10
 
-    edges = detect_edges_canny(train_data[:10].reshape(10, 3, 32, 32))
-    visualize_grayscale_image(edges[0])
-    visualize_rgb_image(train_data[0])
+    time_start = timer()
+    edges = detect_edges_canny(train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32))
+    time_end = timer()
+    logger.info(f"Time taken to detect edges: {time_end - time_start:.5f} seconds")
+    visualize_grayscale_image(edges[6])
+    visualize_rgb_image(train_data[6])
 
 
 if __name__ == "__main__":
