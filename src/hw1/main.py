@@ -19,7 +19,7 @@ N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
 
 logger = logging.getLogger(__name__)
 
-Metric = Literal['angular', 'euclidean', 'manhattan', 'hamming', 'dot']
+Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
 
 
 def find_best_k_with_cross_validation(
@@ -47,14 +47,16 @@ def find_best_k_with_cross_validation(
         scores = []
 
         for i in range(n_splits):
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, train_size=0.9, shuffle=True, random_state=42+i)  # Fixed random state for reproducibility and caching
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.05, train_size=0.9, shuffle=True, random_state=42 + i
+            )  # Fixed random state for reproducibility and caching
             if issubclass(classifier_cls, (KNeighborsClassifier, AnnoyClassifier)):
                 classifier = classifier_cls(n_neighbors=k, **(init_kwargs or {}))
             else:
                 raise ValueError("Invalid classifier.")
             classifier.fit(X_train, y_train)
             y_pred = classifier.predict(X_test)
-            score = metrics.f1_score(y_test, y_pred, average='macro')
+            score = metrics.f1_score(y_test, y_pred, average="macro")
             logger.info(f"k: {k}, test: {i+1}, F1 score: {score}")
             scores.append(score)
 
@@ -72,7 +74,12 @@ def main():
         X=train_data,
         y=train_labels,
         classifier_cls=AnnoyClassifier,
-        init_kwargs={"metric": "angular", "weights": "distance", "num_trees": 100, "save_index": False},
+        init_kwargs={
+            "metric": "angular",
+            "weights": "distance",
+            "num_trees": 100,
+            "save_index": False,
+        },
     )
 
 

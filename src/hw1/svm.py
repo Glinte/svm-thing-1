@@ -6,7 +6,14 @@ from torch import nn
 from torch.optim.adam import Adam
 
 from hw1.features import detect_edges_canny
-from hw1 import train_data as train_data_raw, train_labels, test_data as test_data_raw, test_labels
+from hw1 import (
+    train_data as train_data_raw,
+    train_labels,
+    test_data as test_data_raw,
+    test_labels,
+    train_data_edges,
+    test_data_edges,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +42,7 @@ class SVM(nn.Module):
         return loss
 
     def l2_regularization(self) -> torch.Tensor:
-        return torch.sum(self.weights ** 2)
+        return torch.sum(self.weights**2)
 
     def loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return self.hinge_loss(x, y) + self.l2_regularization()
@@ -47,7 +54,13 @@ class SVM(nn.Module):
         torch.save(self.state_dict(), path)
 
 
-def train_svm(model: SVM, x: torch.Tensor, y: torch.Tensor, learning_rate: float = 1e-3, n_iters: int = 1000):
+def train_svm(
+    model: SVM,
+    x: torch.Tensor,
+    y: torch.Tensor,
+    learning_rate: float = 1e-3,
+    n_iters: int = 1000,
+):
     optimizer = Adam(model.parameters(), lr=learning_rate)
     for i in range(n_iters):
         optimizer.zero_grad()
@@ -71,13 +84,32 @@ def main():
     n_classes = 10
 
     model = SVM(n_features, n_classes)
-    train_data_edges = detect_edges_canny(train_data_raw.reshape(50000, 3, 32, 32))
-    train_data = np.concatenate((train_data_raw.reshape(50000, 3, 32, 32), train_data_edges.reshape(50000, 1, 32, 32)), axis=1)
-    test_data_edges = detect_edges_canny(test_data_raw.reshape(10000, 3, 32, 32))
-    test_data = np.concatenate((test_data_raw.reshape(10000, 3, 32, 32), test_data_edges.reshape(50000, 1, 32, 32)), axis=1)
+    train_data = np.concatenate(
+        (
+            train_data_raw.reshape(50000, 3, 32, 32),
+            train_data_edges.reshape(50000, 1, 32, 32),
+        ),
+        axis=1,
+    )
+    test_data = np.concatenate(
+        (
+            test_data_raw.reshape(10000, 3, 32, 32),
+            test_data_edges.reshape(50000, 1, 32, 32),
+        ),
+        axis=1,
+    )
 
-    model = train_svm(model, torch.tensor(train_data, dtype=torch.float32), torch.tensor(train_labels, dtype=torch.uint8), n_iters=300)
-    accuracy = test_svm(model, torch.tensor(test_data, dtype=torch.float32), torch.tensor(test_labels, dtype=torch.uint8))
+    model = train_svm(
+        model,
+        torch.tensor(train_data, dtype=torch.float32),
+        torch.tensor(train_labels, dtype=torch.uint8),
+        n_iters=50,
+    )
+    accuracy = test_svm(
+        model,
+        torch.tensor(test_data, dtype=torch.float32),
+        torch.tensor(test_labels, dtype=torch.uint8),
+    )
     print(f"Accuracy: {accuracy}")
     model.save("svm.pth")
 

@@ -1,4 +1,5 @@
 """Functions to extract features from the data."""
+
 from __future__ import annotations
 
 import logging
@@ -9,7 +10,11 @@ from skimage import feature
 import torch
 
 from hw1 import train_data, test_data
-from hw1.visualization import visualize_grayscale_image, visualize_rgb_image, visualize_images
+from hw1.visualization import (
+    visualize_grayscale_image,
+    visualize_rgb_image,
+    visualize_images,
+)
 
 if TYPE_CHECKING:
     pass
@@ -20,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 @overload
 def rgb_to_grayscale[Batch: int, Pixels: int](
-    image_rgb: np.ndarray[tuple[Batch, Literal[3], Pixels], np.dtype[np.number[Any]]]
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Pixels], np.dtype[np.number[Any]]],
 ) -> np.ndarray[tuple[Batch, Pixels], np.dtype[np.float32]]:
     """Convert RGB images to grayscale.
 
@@ -28,9 +33,12 @@ def rgb_to_grayscale[Batch: int, Pixels: int](
         image_rgb: RGB image ndarray of shape (Batch, 3, Pixels)
     """
 
+
 @overload
 def rgb_to_grayscale[Batch: int, Height: int, Width: int](
-    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]]
+    image_rgb: np.ndarray[
+        tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]
+    ],
 ) -> np.ndarray[tuple[Batch, Height, Width], np.dtype[np.float32]]:
     """Convert an RGB image to grayscale.
 
@@ -54,12 +62,16 @@ def rgb_to_grayscale(image_rgb):
     Args:
         image_rgb: a tensor of shape (Batch, 3, H, W), with values in the range [0, 1].
     """
-    image_gray = 0.2989 * image_rgb[:, 0] + 0.5870 * image_rgb[:, 1] + 0.1140 * image_rgb[:, 2]
+    image_gray = (
+        0.2989 * image_rgb[:, 0] + 0.5870 * image_rgb[:, 1] + 0.1140 * image_rgb[:, 2]
+    )
     return image_gray
 
 
 def detect_edges_canny[Batch: int, Height: int, Width: int](
-    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]],
+    image_rgb: np.ndarray[
+        tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]
+    ],
     *,
     sigma: float = 0.75,
     low_threshold: int = 80,
@@ -80,7 +92,9 @@ def detect_edges_canny[Batch: int, Height: int, Width: int](
     """
     image_gray = rgb_to_grayscale(image_rgb)
 
-    edges: np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]] = np.zeros_like(image_gray, dtype=bool)
+    edges: np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]] = np.zeros_like(
+        image_gray, dtype=bool
+    )
     for n in range(image_rgb.shape[0]):
         edges[n] = feature.canny(image_gray[n], sigma, low_threshold, high_threshold)
 
@@ -92,6 +106,7 @@ def detect_edges_canny[Batch: int, Height: int, Width: int](
 def main():
     """Quick testing, not part of the library."""
     from timeit import default_timer as timer
+
     logging.basicConfig(level=logging.INFO)
 
     N_SAMPLES = 10000
