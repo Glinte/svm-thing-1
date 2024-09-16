@@ -141,6 +141,7 @@ dependencies = [
     { name = "keras" },
     { name = "matplotlib" },
     { name = "numpy" },
+    { name = "opencv-stubs" },
     { name = "pandas" },
     { name = "pillow" },
     { name = "pip" },
@@ -160,6 +161,7 @@ requires-dist = [
     { name = "keras", specifier = ">=3.5.0" },
     { name = "matplotlib", specifier = ">=3.9.2" },
     { name = "numpy", specifier = "<2" },
+    { name = "opencv-stubs", specifier = ">=0.0.10" },
     { name = "pandas", specifier = ">=2.2.2" },
     { name = "pillow", specifier = ">=10.4.0" },
     { name = "pip", specifier = ">=24.2" },
@@ -522,6 +524,18 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/da/d3/8057f0587683ed2fcd4dbfbdfdfa807b9160b809976099d36b8f60d08f03/nvidia_nvtx_cu12-12.1.105-py3-none-manylinux1_x86_64.whl", hash = "sha256:dc21cf308ca5691e7c04d962e213f8a4aa9bbfa23d95412f452254c2caeb09e5", size = 99138 },
     { url = "https://files.pythonhosted.org/packages/b8/d7/bd7cb2d95ac6ac6e8d05bfa96cdce69619f1ef2808e072919044c2d47a8c/nvidia_nvtx_cu12-12.1.105-py3-none-win_amd64.whl", hash = "sha256:65f4d98982b31b60026e0e6de73fbdfc09d08a96f4656dd3665ca616a11e1e82", size = 66307 },
+]
+
+[[package]]
+name = "opencv-stubs"
+version = "0.0.10"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5d/d3/cebbcce9083345047818190ae1b354166812b3687e104aefc0bb3c430580/opencv_stubs-0.0.10.tar.gz", hash = "sha256:d739c5e7b0628838e1a9a7dc88f9eb1b2c0a9df14d5ae879f9615788a9de1436", size = 341213 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/69/d2/bde334d5d9a95dbda9038ae1c682529d66f4db554b0890e73881106fa7f4/opencv_stubs-0.0.10-py3-none-any.whl", hash = "sha256:470f979b7403e1766857fd21922f292a9b84450da90d2e498d63c6b59148d87e", size = 362599 },
 ]
 
 [[package]]

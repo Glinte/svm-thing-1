@@ -20,6 +20,7 @@ dependencies = [
     "pyqt5>=5.15.11",
     "scikit-image",
     "beartype>=0.18.5",
+    "opencv-stubs>=0.0.10",
 ]
 
 [build-system]
