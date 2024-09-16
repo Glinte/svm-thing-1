@@ -14,7 +14,9 @@ from hw1 import (
     test_data_edges,
 )
 
+
 logger = logging.getLogger(__name__)
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class SVM(nn.Module):
@@ -22,8 +24,8 @@ class SVM(nn.Module):
         super(SVM, self).__init__()
         self.n_features = n_features
         self.n_classes = n_classes
-        self.weights = nn.Parameter(torch.randn(n_features, n_classes, device="cuda"))
-        self.bias = nn.Parameter(torch.randn(n_classes, device="cuda"))
+        self.weights = nn.Parameter(torch.randn(n_features, n_classes, device=device))
+        self.bias = nn.Parameter(torch.randn(n_classes, device=device))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Compute the forward pass of the SVM model."""
@@ -106,15 +108,15 @@ def main():
 
     model = train_svm(
         model,
-        torch.tensor(train_data.reshape(50000, -1), dtype=torch.float32, device="cuda"),
-        torch.tensor(train_labels, dtype=torch.int64, device="cuda"),
+        torch.tensor(train_data.reshape(50000, -1), dtype=torch.float32, device=device),
+        torch.tensor(train_labels, dtype=torch.int64, device=device),
         n_iters=n_iters,
     )
     # model.load("svm_edges_20000.pth")
     accuracy = test_svm(
         model,
-        torch.tensor(test_data.reshape(10000, -1), dtype=torch.float32, device="cuda"),
-        torch.tensor(test_labels, dtype=torch.int64, device="cuda"),
+        torch.tensor(test_data.reshape(10000, -1), dtype=torch.float32, device=device),
+        torch.tensor(test_labels, dtype=torch.int64, device=device),
     )
     print(f"Accuracy: {accuracy}")
     model.save(f"svm_base_{n_iters}.pth")
