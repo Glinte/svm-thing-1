@@ -26,9 +26,11 @@ class SVM(nn.Module):
         self.bias = nn.Parameter(torch.randn(n_classes))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Compute the forward pass of the SVM model."""
         return torch.matmul(x, self.weights) + self.bias
 
     def predict(self, x: torch.Tensor) -> torch.Tensor:
+        """Predict the class of the input."""
         return torch.argmax(self.forward(x), dim=1)
 
     def hinge_loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
@@ -40,15 +42,19 @@ class SVM(nn.Module):
         return torch.mean(torch.sum(margins, dim=1))
 
     def l2_regularization(self) -> torch.Tensor:
+        """Compute the L2 regularization term."""
         return torch.sum(self.weights**2)
 
     def loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        """Compute the loss of the SVM model."""
         return self.hinge_loss(x, y) + self.l2_regularization()
 
     def load(self, path: str):
+        """Load the model from a file."""
         self.load_state_dict(torch.load(path))
 
     def save(self, path: str):
+        """Save the model to a file."""
         torch.save(self.state_dict(), path)
 
 
