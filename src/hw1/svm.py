@@ -32,13 +32,12 @@ class SVM(nn.Module):
         return torch.argmax(self.forward(x), dim=1)
 
     def hinge_loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        """Compute the hinge loss of the SVM model."""
         scores = self.forward(x)
-        # logger.debug()
-        correct_scores = scores[[torch.arange(scores.size(0)), y]]
+        correct_scores = scores[torch.arange(x.shape[0]), y]
         margins = torch.clamp(scores - correct_scores[:, None] + 1, min=0)
-        margins[torch.arange(scores.size(0)), y] = 0
-        loss = torch.sum(margins)
-        return loss
+        margins[torch.arange(x.shape[0]), y] = 0
+        return torch.mean(torch.sum(margins, dim=1))
 
     def l2_regularization(self) -> torch.Tensor:
         return torch.sum(self.weights**2)
