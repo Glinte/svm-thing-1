@@ -31,3 +31,6 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 constraint-dependencies = ["pyqt5-qt5 <=5.15.2"]  # https://github.com/astral-sh/uv/issues/7005
+
+[tool.ruff]
+line-length = 120
