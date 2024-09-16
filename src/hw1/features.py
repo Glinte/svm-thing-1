@@ -9,7 +9,7 @@ from skimage import feature
 import torch
 
 from hw1.main import train_data
-from hw1.visualization import visualize_grayscale_image, visualize_rgb_image
+from hw1.visualization import visualize_grayscale_image, visualize_rgb_image, visualize_images
 
 if TYPE_CHECKING:
     pass
@@ -61,9 +61,9 @@ def rgb_to_grayscale(image_rgb):
 def detect_edges_canny[Batch: int, Height: int, Width: int](
     image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]],
     *,
-    sigma: float = 0.8,
-    low_threshold: int = 100,
-    high_threshold: int = 200,
+    sigma: float = 0.75,
+    low_threshold: int = 80,
+    high_threshold: int = 160,
 ) -> np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]]:
     """Detect edges in an image using the Canny edge detector.
 
@@ -88,14 +88,16 @@ def main():
     """Quick testing, not part of the library."""
     from timeit import default_timer as timer
     logging.basicConfig(level=logging.INFO)
-    N_SAMPLES = 10
+
+    N_SAMPLES = 100
 
     time_start = timer()
     edges = detect_edges_canny(train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32))
     time_end = timer()
     logger.info(f"Time taken to detect edges: {time_end - time_start:.5f} seconds")
-    visualize_grayscale_image(edges[6])
-    visualize_rgb_image(train_data[6])
+
+    visualize_images(edges)
+    visualize_images(train_data[:100])
 
 
 if __name__ == "__main__":
