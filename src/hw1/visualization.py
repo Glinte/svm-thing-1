@@ -41,11 +41,12 @@ def visualize_rgb_image(data: Sequence[bytes | int | float]) -> ImageType:
 
 
 @beartype
-def visualize_grayscale_image(data: Annotated[np.ndarray[Any, np.dtype[Any]], Is[lambda data: data.size == 1024]]) -> ImageType:
+def visualize_grayscale_image(data: Annotated[np.ndarray[Any, np.dtype[Any]], Is[lambda data: data.size == 1024]], *, show: bool = True) -> ImageType:
     """Visualize a single 32x32 grayscale image."""
 
     image = Image.fromarray(data.reshape(32, 32))
-    image.show()
+    if show:
+        image.show()
     return image
 
 
