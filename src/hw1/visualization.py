@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Sequence, TYPE_CHECKING, Any, Annotated, Literal
+from typing import Sequence, TYPE_CHECKING, Any, Annotated
 
 import numpy as np
 from PIL import Image

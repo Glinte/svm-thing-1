@@ -5,7 +5,6 @@ import torch
 from torch import nn
 from torch.optim.adam import Adam
 
-from hw1.features import detect_edges_canny
 from hw1 import (
     train_data as train_data_raw,
     train_labels,
