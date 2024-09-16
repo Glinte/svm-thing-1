@@ -22,8 +22,8 @@ class SVM(nn.Module):
         super(SVM, self).__init__()
         self.n_features = n_features
         self.n_classes = n_classes
-        self.weights = nn.Parameter(torch.randn(n_features, n_classes))
-        self.bias = nn.Parameter(torch.randn(n_classes))
+        self.weights = nn.Parameter(torch.randn(n_features, n_classes, device="cuda"))
+        self.bias = nn.Parameter(torch.randn(n_classes, device="cuda"))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Compute the forward pass of the SVM model."""
@@ -84,8 +84,9 @@ def test_svm(model: SVM, x: torch.Tensor, y: torch.Tensor) -> float:
 
 
 def main():
-    n_features = 3072
+    n_features = 3 * 32 * 32 + 32 * 32
     n_classes = 10
+    n_iters = 20000
 
     model = SVM(n_features, n_classes)
     train_data = np.concatenate(
@@ -98,24 +99,25 @@ def main():
     test_data = np.concatenate(
         (
             test_data_raw.reshape(10000, 3, 32, 32),
-            test_data_edges.reshape(50000, 1, 32, 32),
+            test_data_edges.reshape(10000, 1, 32, 32),
         ),
         axis=1,
     )
 
     model = train_svm(
         model,
-        torch.tensor(train_data, dtype=torch.float32),
-        torch.tensor(train_labels, dtype=torch.uint8),
-        n_iters=50,
+        torch.tensor(train_data.reshape(50000, -1), dtype=torch.float32, device="cuda"),
+        torch.tensor(train_labels, dtype=torch.int64, device="cuda"),
+        n_iters=n_iters,
     )
+    # model.load("svm_edges_20000.pth")
     accuracy = test_svm(
         model,
-        torch.tensor(test_data, dtype=torch.float32),
-        torch.tensor(test_labels, dtype=torch.uint8),
+        torch.tensor(test_data.reshape(10000, -1), dtype=torch.float32, device="cuda"),
+        torch.tensor(test_labels, dtype=torch.int64, device="cuda"),
     )
     print(f"Accuracy: {accuracy}")
-    model.save("svm.pth")
+    model.save(f"svm_base_{n_iters}.pth")
 
 
 if __name__ == "__main__":
