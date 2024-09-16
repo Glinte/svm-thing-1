@@ -104,10 +104,10 @@ def main():
 
     logging.basicConfig(level=logging.INFO)
 
-    N_SAMPLES = 10000
+    N_SAMPLES = 50000
 
     time_start = timer()
-    edges = detect_edges_canny(train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32))
+    edges = detect_edges_canny(train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32), pickle_path="train_data_edges.npy")
     time_end = timer()
     logger.info(f"Time taken to detect edges: {time_end - time_start:.5f} seconds")
 
