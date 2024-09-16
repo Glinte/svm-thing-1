@@ -8,7 +8,8 @@ from annoy import AnnoyIndex
 from numpy import typing as npt
 from sklearn.neighbors import KNeighborsClassifier
 
-from hw1.main import N_NEIGHBORS, train_data, train_labels, Metric
+from hw1.main import N_NEIGHBORS, Metric
+from hw1 import train_data, train_labels
 
 
 def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:

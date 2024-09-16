@@ -8,7 +8,7 @@ import numpy as np
 from skimage import feature
 import torch
 
-from hw1.main import train_data, test_data
+from hw1 import train_data, test_data
 from hw1.visualization import visualize_grayscale_image, visualize_rgb_image, visualize_images
 
 if TYPE_CHECKING:

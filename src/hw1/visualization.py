@@ -12,7 +12,7 @@ from beartype.vale import Is
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 
-from src.hw1.main import label_names, train_data, train_labels
+from hw1 import label_names, train_data, train_labels
 from src.hw1 import DataDict
 
 if TYPE_CHECKING:
