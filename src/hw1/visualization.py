@@ -32,11 +32,13 @@ def visualize_dataset_as_image(data: DataDict) -> ImageType:
     return combine_images_vertically(label_images)
 
 
-def visualize_rgb_image(data: Sequence[bytes | int | float]) -> ImageType:
+@beartype
+def visualize_rgb_image(data: Annotated[np.ndarray[Any, np.dtype[Any]], Is[lambda data: data.size == 3072]], *, show: bool = True) -> ImageType:
     """Visualize a single RGB image."""
 
-    image = Image.fromarray(np.array(data, dtype=np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
-    image.show()
+    image = Image.fromarray(data.astype(np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
+    if show:
+        image.show()
     return image
 
 
