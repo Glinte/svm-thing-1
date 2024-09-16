@@ -44,7 +44,7 @@ def visualize_rgb_image(data: Sequence[bytes | int | float]) -> ImageType:
 def visualize_grayscale_image(data: Annotated[np.ndarray[Any, np.dtype[Any]], Is[lambda data: data.size == 1024]]) -> ImageType:
     """Visualize a single 32x32 grayscale image."""
 
-    image = Image.fromarray(data.astype(np.uint8).reshape(32, 32))
+    image = Image.fromarray(data.reshape(32, 32))
     image.show()
     return image
 

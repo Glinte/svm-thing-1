@@ -9,8 +9,7 @@ from skimage import feature
 import torch
 
 from hw1.main import train_data
-from hw1.visualization import visualize_grayscale_image
-
+from hw1.visualization import visualize_grayscale_image, visualize_rgb_image
 
 if TYPE_CHECKING:
     pass
@@ -20,23 +19,23 @@ logger = logging.getLogger(__name__)
 
 
 @overload
-def rgb_to_grayscale[Pixels: int](
-    image_rgb: np.ndarray[tuple[Literal[3], Pixels], np.dtype[np.number[Any]]]
-) -> np.ndarray[tuple[Pixels], np.dtype[np.float32]]:
-    """Convert an RGB image to grayscale.
+def rgb_to_grayscale[Batch: int, Pixels: int](
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Pixels], np.dtype[np.number[Any]]]
+) -> np.ndarray[tuple[Batch, Pixels], np.dtype[np.float32]]:
+    """Convert RGB images to grayscale.
 
     Args:
-        image_rgb: RGB image ndarray of shape (3, Pixels)
+        image_rgb: RGB image ndarray of shape (Batch, 3, Pixels)
     """
 
 @overload
-def rgb_to_grayscale[Height: int, Width: int](
-    image_rgb: np.ndarray[tuple[Literal[3], Height, Width], np.dtype[np.number[Any]]]
-) -> np.ndarray[tuple[Height, Width], np.dtype[np.float32]]:
+def rgb_to_grayscale[Batch: int, Height: int, Width: int](
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]]
+) -> np.ndarray[tuple[Batch, Height, Width], np.dtype[np.float32]]:
     """Convert an RGB image to grayscale.
 
     Args:
-        image_rgb: RGB image ndarray of shape (3, H, W)
+        image_rgb: RGB image ndarray of shape (Batch, 3, H, W)
     """
 
 
@@ -45,7 +44,7 @@ def rgb_to_grayscale(image_rgb: torch.Tensor) -> torch.Tensor:
     """Convert an RGB image to grayscale.
 
     Args:
-        image_rgb: RGB image tensor of shape (3, H, W) or (3, Pixels)
+        image_rgb: RGB image tensor of shape (Batch, 3, H, W) or (Batch, 3, Pixels)
     """
 
 
@@ -53,22 +52,22 @@ def rgb_to_grayscale(image_rgb):
     """Convert an RGB image to grayscale.
 
     Args:
-        image_rgb: A sequence of 3 channels (R, G, B) or a tensor of shape (3, H, W), with values in the range [0, 1].
+        image_rgb: a tensor of shape (Batch, 3, H, W), with values in the range [0, 1].
     """
-    image_gray = 0.2989 * image_rgb[0] + 0.5870 * image_rgb[1] + 0.1140 * image_rgb[2]
+    image_gray = 0.2989 * image_rgb[:, 0] + 0.5870 * image_rgb[:, 1] + 0.1140 * image_rgb[:, 2]
     return image_gray
 
 
-def detect_edges_canny[Height: int, Width: int](
-    image_rgb: np.ndarray[tuple[Literal[3], Height, Width], np.dtype[np.number[Any]]],
+def detect_edges_canny[Batch: int, Height: int, Width: int](
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]],
     *,
     low_threshold: int = 100,
     high_threshold: int = 200
-) -> np.ndarray[tuple[Height, Width], np.dtype[np.bool_]]:
+) -> np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]]:
     """Detect edges in an image using the Canny edge detector.
 
     Args:
-        image_rgb: Input RGB image tensor of shape (3, H, W)
+        image_rgb: Input RGB image tensor of shape (Batch, 3, H, W)
         low_threshold (int): Lower threshold for the hysteresis procedure
         high_threshold (int): Higher threshold for the hysteresis procedure
 
@@ -77,13 +76,18 @@ def detect_edges_canny[Height: int, Width: int](
     """
     image_gray = rgb_to_grayscale(image_rgb)
 
-    return feature.canny(image_gray, 1, low_threshold, high_threshold)
+    edges: np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]] = np.zeros_like(image_gray, dtype=bool)
+    for n in range(image_rgb.shape[0]):
+        edges[n] = feature.canny(image_gray[n], 1, low_threshold, high_threshold)
+    return edges
 
 
 def main():
     """Quick testing, not part of the library."""
-    edges = detect_edges_canny(train_data[1].reshape(3, 32, 32))
-    visualize_grayscale_image(edges.reshape(1024) * 255)
+
+    edges = detect_edges_canny(train_data[:10].reshape(10, 3, 32, 32))
+    visualize_grayscale_image(edges[0])
+    visualize_rgb_image(train_data[0])
 
 
 if __name__ == "__main__":
