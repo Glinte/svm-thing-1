@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import random
-from typing import Sequence, TYPE_CHECKING, Any, Annotated
+from typing import Sequence, TYPE_CHECKING, Any, Annotated, Literal
 
 import numpy as np
 from PIL import Image
@@ -50,6 +50,32 @@ def visualize_grayscale_image(data: Annotated[np.ndarray[Any, np.dtype[Any]], Is
     if show:
         image.show()
     return image
+
+
+@beartype
+def visualize_images(
+    data: Annotated[np.ndarray[Any, np.dtype[Any]], Is[lambda data: data[0].size == 1024 or data[0].size == 3072]],
+    *,
+    show: bool = True
+) -> ImageType:
+    """Visualize multiple 32x32 images. Images can be either grayscale or RGB.
+
+    Images are displayed as a square grid of images.
+    """
+
+    if data[0].size == 1024:
+        images = [Image.fromarray(i.reshape(32, 32)) for i in data]
+    else:
+        images = [Image.fromarray(i.astype(np.uint8).reshape(3, 32, 32).transpose(1, 2, 0)) for i in data]
+
+    total_images = len(images)
+    rows = int(np.sqrt(total_images))
+    cols = total_images // rows
+
+    combined_image = combine_images_vertically([combine_images_horizontally(images[i:i + cols]) for i in range(0, total_images, cols)])
+    if show:
+        combined_image.show()
+    return combined_image
 
 
 def combine_images_horizontally(images: Sequence[ImageType]) -> ImageType:
