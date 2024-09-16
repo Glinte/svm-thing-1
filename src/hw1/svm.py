@@ -53,7 +53,7 @@ class SVM(nn.Module):
 
     def load(self, path: str):
         """Load the model from a file."""
-        self.load_state_dict(torch.load(path))
+        self.load_state_dict(torch.load(path, weights_only=True))
 
     def save(self, path: str):
         """Save the model to a file."""
