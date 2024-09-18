@@ -6,7 +6,10 @@ from os import PathLike
 from typing import TypedDict, Literal
 
 import numpy as np
-
+import torch
+import torchvision
+from torch.utils.data import DataLoader
+from torchvision.transforms import transforms
 
 type N_IMAGES = int
 type N_PIXELS = Literal[3072]
@@ -75,3 +78,31 @@ test_data_edges: np.ndarray[
     tuple[N_IMAGES, Literal[32], Literal[32]], np.dtype[np.bool_]
 ] = np.load("test_data_edges.npy")
 test_labels = _test_data["labels"]
+
+
+def get_train_set_dataloader(batch_size: int = 4) -> DataLoader[torch.Tensor]:
+    """Get the CIFAR-10 training DataLoader."""
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]
+    )
+    trainset = torchvision.datasets.CIFAR10(
+        root="./data", train=True, download=False, transform=transform
+    )
+    return DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
+
+
+def get_test_set_dataloader(batch_size: int = 4) -> DataLoader[torch.Tensor]:
+    """Get the CIFAR-10 test DataLoader."""
+    transform = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+        ]
+    )
+    testset = torchvision.datasets.CIFAR10(
+        root="./data", train=False, download=False, transform=transform
+    )
+    return DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
