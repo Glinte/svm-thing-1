@@ -15,7 +15,7 @@ from hw1 import train_data, train_labels, get_train_set_dataloader, get_test_set
 logger = logging.getLogger(__name__)
 
 
-class Net(nn.Module):
+class CNN(nn.Module):
     def __init__(self, device: torch.device = torch.device('cuda')) -> None:
         super().__init__()
         self.conv1 = nn.Conv2d(3, 6, 5, device=device)
@@ -67,7 +67,7 @@ def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, data
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    net = Net()
+    net = CNN()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
