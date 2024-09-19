@@ -62,31 +62,33 @@ def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, data
 
     if save_to is not None:
         torch.save(net.state_dict(), save_to)
+        logger.info(f"Saved model to {save_to}")
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     net = Net()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    train(net, criterion, optimizer, get_train_set_dataloader(), save_to=f"{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth")
+    # train(net, criterion, optimizer, get_train_set_dataloader(), save_to=f"{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth")
 
-    # net.load_state_dict(torch.load("cnn_tutorial_2.pth", weights_only=True))
-    #
-    # correct = 0
-    # total = 0
-    # # since we're not training, we don't need to calculate the gradients for our outputs
-    # with torch.no_grad():
-    #     for data in get_test_set_dataloader():
-    #         images, labels = data
-    #         # calculate outputs by running images through the network
-    #         outputs = net(images.to(device=torch.device('cuda')))
-    #         # the class with the highest energy is what we choose as prediction
-    #         _, predicted = torch.max(outputs.data, 1)
-    #         total += labels.size(0)
-    #         correct += (predicted.to(device=torch.device("cpu")) == labels).sum().item()
-    #
-    # print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+    net.load_state_dict(torch.load("cnn_tutorial_2.pth", weights_only=True))
+
+    correct = 0
+    total = 0
+    # since we're not training, we don't need to calculate the gradients for our outputs
+    with torch.no_grad():
+        for data in get_test_set_dataloader():
+            images, labels = data
+            # calculate outputs by running images through the network
+            outputs = net(images.to(device=torch.device('cuda')))
+            # the class with the highest energy is what we choose as prediction
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted.to(device=torch.device("cpu")) == labels).sum().item()
+
+    print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
 
 
 if __name__ == '__main__':
