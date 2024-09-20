@@ -1,6 +1,8 @@
 import logging
 
+import numpy as np
 import torch
+from sklearn import metrics
 from torch import nn, optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -78,8 +80,8 @@ def main():
     # train(net, criterion, optimizer, get_train_set_dataloader(), epochs=5, save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth", device=torch.device('cuda'))
     net.load_state_dict(torch.load("../../data/models/202409191050_cnn_tutorial_5.pth", weights_only=True))
 
-    correct = 0
-    total = 0
+    y_pred = np.array([])
+    y_true = np.array([])
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
         for data in get_test_set_dataloader():
@@ -88,31 +90,10 @@ def main():
             outputs = net(images.to(device=torch.device("cuda")))
             # the class with the highest energy is what we choose as prediction
             _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted.to(device=torch.device("cpu")) == labels).sum().item()
+            y_pred = np.concatenate((y_pred, predicted.cpu().numpy()))
+            y_true = np.concatenate((y_true, labels.numpy()))
 
-    print(f"Accuracy of the network on the 10000 test images: {100 * correct // total} %")
-
-    # prepare to count predictions for each class
-    correct_pred = {classname: 0 for classname in label_names}
-    total_pred = {classname: 0 for classname in label_names}
-
-    # again no gradients needed
-    with torch.no_grad():
-        for data in get_test_set_dataloader():
-            images, labels = data
-            outputs = net(images.to(device=torch.device("cuda")))
-            _, predictions = torch.max(outputs, 1)
-            # collect the correct predictions for each class
-            for label, prediction in zip(labels, predictions):
-                if label == prediction:
-                    correct_pred[label_names[label]] += 1
-                total_pred[label_names[label]] += 1
-
-    # print accuracy for each class
-    for classname, correct_count in correct_pred.items():
-        accuracy = 100 * float(correct_count) / total_pred[classname]
-        print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
+    print(metrics.classification_report(y_true, y_pred, target_names=label_names, digits=4))
 
 
 if __name__ == "__main__":
