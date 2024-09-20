@@ -1,29 +1,24 @@
 import logging
-from datetime import datetime, tzinfo, timezone
 
-import pytz
 import torch
-import torchvision
 from torch import nn, optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from torchvision.transforms import transforms
 
-from hw1 import train_data, train_labels, get_train_set_dataloader, get_test_set_dataloader
-
+from hw1 import get_test_set_dataloader, label_names
 
 logger = logging.getLogger(__name__)
 
 
 class CNN(nn.Module):
-    def __init__(self, device: torch.device = torch.device('cuda')) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5, device=device)
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5, device=device)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120, device=device)
-        self.fc2 = nn.Linear(120, 84, device=device)
-        self.fc3 = nn.Linear(84, 10, device=device)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.pool(F.relu(self.conv1(x)))
@@ -35,11 +30,11 @@ class CNN(nn.Module):
         return x
 
 
-def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, dataloader: DataLoader[torch.Tensor], device: torch.device = torch.device('cuda'), save_to: str = None) -> None:
-    for epoch in range(5):  # loop over the dataset multiple times
-
+def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, dataloader: DataLoader[torch.Tensor], epochs: int = 2, device: torch.device = torch.device('cuda'), save_to: str | None = None) -> None:
+    """Train the model."""
+    for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
-        for i, data in enumerate(dataloader, 0):
+        for i, data in enumerate(dataloader):
             # get the inputs; data is a list of [inputs, labels]
             inputs: torch.Tensor
             labels: torch.Tensor
@@ -68,12 +63,12 @@ def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, data
 def main():
     logging.basicConfig(level=logging.INFO)
     net = CNN()
+    net.to(device=torch.device('cuda'))
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    # train(net, criterion, optimizer, get_train_set_dataloader(), save_to=f"{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth")
-
-    net.load_state_dict(torch.load("cnn_tutorial_2.pth", weights_only=True))
+    # train(net, criterion, optimizer, get_train_set_dataloader(), epochs=5, save_to=f"{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth", device=torch.device('cuda'))
+    net.load_state_dict(torch.load("202409191050_cnn_tutorial_5.pth", weights_only=True))
 
     correct = 0
     total = 0
@@ -89,6 +84,27 @@ def main():
             correct += (predicted.to(device=torch.device("cpu")) == labels).sum().item()
 
     print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+
+    # prepare to count predictions for each class
+    correct_pred = {classname: 0 for classname in label_names}
+    total_pred = {classname: 0 for classname in label_names}
+
+    # again no gradients needed
+    with torch.no_grad():
+        for data in get_test_set_dataloader():
+            images, labels = data
+            outputs = net(images.to(device=torch.device('cuda')))
+            _, predictions = torch.max(outputs, 1)
+            # collect the correct predictions for each class
+            for label, prediction in zip(labels, predictions):
+                if label == prediction:
+                    correct_pred[label_names[label]] += 1
+                total_pred[label_names[label]] += 1
+
+    # print accuracy for each class
+    for classname, correct_count in correct_pred.items():
+        accuracy = 100 * float(correct_count) / total_pred[classname]
+        print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
 
 
 if __name__ == '__main__':
