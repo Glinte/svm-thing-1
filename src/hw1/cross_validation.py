@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import numpy as np
@@ -9,7 +10,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 
 from hw1.knn import AnnoyClassifier
-from hw1.main import logger
+
+
+logger = logging.getLogger(__name__)
 
 
 def find_best_k_with_cross_validation(
