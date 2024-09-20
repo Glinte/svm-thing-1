@@ -89,7 +89,7 @@ def get_train_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
         ]
     )
     trainset = torchvision.datasets.CIFAR10(
-        root="./data", train=True, download=False, transform=transform
+        root="../../data", train=True, download=False, transform=transform
     )
     return DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
@@ -103,6 +103,6 @@ def get_test_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
         ]
     )
     testset = torchvision.datasets.CIFAR10(
-        root="./data", train=False, download=False, transform=transform
+        root="../../data", train=False, download=False, transform=transform
     )
     return DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
