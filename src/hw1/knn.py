@@ -16,14 +16,10 @@ Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
 N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
 
 
-def classify(
-    X: npt.ArrayLike, p: int = 2
-) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:
+def classify(X: npt.ArrayLike, p: int = 2) -> np.ndarray[tuple[int], np.dtype[np.uint8]]:
     """Classify some data using the K-Nearest Neighbors algorithm, with all the training data."""
 
-    classifier = KNeighborsClassifier(n_neighbors=N_NEIGHBORS, p=p).fit(
-        train_data, train_labels
-    )
+    classifier = KNeighborsClassifier(n_neighbors=N_NEIGHBORS, p=p).fit(train_data, train_labels)
     prediction: np.ndarray[tuple[int], np.dtype[np.uint8]] = classifier.predict(X)
     return prediction
 
@@ -51,9 +47,7 @@ class AnnoyClassifier:
         """Fit the model."""
 
         self.labels = np.array(y)
-        self.index = build_index(
-            X, metric=self.metric, num_trees=self.num_trees, save_index=self.save_index
-        )
+        self.index = build_index(X, metric=self.metric, num_trees=self.num_trees, save_index=self.save_index)
         return self
 
     def predict(self, X: npt.ArrayLike) -> np.ndarray[tuple[int], np.dtype[np.int32]]:
@@ -65,15 +59,11 @@ class AnnoyClassifier:
 
         X = np.asarray(X)
         include_distances = self.weights == "distance"
-        y_pred = np.apply_along_axis(
-            self._predict_single, 1, X, include_distances=include_distances
-        )
+        y_pred = np.apply_along_axis(self._predict_single, 1, X, include_distances=include_distances)
 
         return y_pred
 
-    def _predict_single(
-        self, x: np.ndarray[tuple[int], Any], include_distances: bool
-    ) -> np.intp:
+    def _predict_single(self, x: np.ndarray[tuple[int], Any], include_distances: bool) -> np.intp:
         """Predict the label of a single data point."""
 
         assert self.index is not None
@@ -81,14 +71,10 @@ class AnnoyClassifier:
 
         if include_distances:
             include_distances = cast(Literal[True], include_distances)
-            nns, distances = self.index.get_nns_by_vector(
-                x, self.n_neighbors, include_distances=include_distances
-            )
+            nns, distances = self.index.get_nns_by_vector(x, self.n_neighbors, include_distances=include_distances)
         else:
             include_distances = cast(Literal[False], include_distances)
-            nns = self.index.get_nns_by_vector(
-                x, self.n_neighbors, include_distances=include_distances
-            )
+            nns = self.index.get_nns_by_vector(x, self.n_neighbors, include_distances=include_distances)
         nn_labels = [self.labels[idx] for idx in nns]
 
         if include_distances:

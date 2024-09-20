@@ -32,9 +32,7 @@ def rgb_to_grayscale[Batch: int, Pixels: int](
 
 @overload
 def rgb_to_grayscale[Batch: int, Height: int, Width: int](
-    image_rgb: np.ndarray[
-        tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]
-    ],
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.number[Any]]],
 ) -> np.ndarray[tuple[Batch, Height, Width], np.dtype[np.float32]]:
     """Convert an RGB image to grayscale.
 
@@ -58,16 +56,12 @@ def rgb_to_grayscale(image_rgb):
     Args:
         image_rgb: a tensor of shape (Batch, 3, H, W), with values in the range [0, 1].
     """
-    image_gray = (
-        0.2989 * image_rgb[:, 0] + 0.5870 * image_rgb[:, 1] + 0.1140 * image_rgb[:, 2]
-    )
+    image_gray = 0.2989 * image_rgb[:, 0] + 0.5870 * image_rgb[:, 1] + 0.1140 * image_rgb[:, 2]
     return image_gray
 
 
 def detect_edges_canny[Batch: int, Height: int, Width: int](
-    image_rgb: np.ndarray[
-        tuple[Batch, Literal[3], Height, Width], np.dtype[np.float64]
-    ],
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.float64]],
     *,
     sigma: float = 0.75,
     low_threshold: int = 80,
@@ -88,9 +82,7 @@ def detect_edges_canny[Batch: int, Height: int, Width: int](
     """
     image_gray = rgb_to_grayscale(image_rgb)
 
-    edges: np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]] = np.zeros_like(
-        image_gray, dtype=bool
-    )
+    edges: np.ndarray[tuple[Batch, Height, Width], np.dtype[np.bool_]] = np.zeros_like(image_gray, dtype=bool)
     for n in range(image_rgb.shape[0]):
         edges[n] = feature.canny(image_gray[n], sigma, low_threshold, high_threshold)
 
@@ -100,11 +92,9 @@ def detect_edges_canny[Batch: int, Height: int, Width: int](
 
 
 def detect_corners_harris[Batch: int, Height: int, Width: int](
-    image_rgb: np.ndarray[
-        tuple[Batch, Literal[3], Height, Width], np.dtype[np.float64]
-    ],
+    image_rgb: np.ndarray[tuple[Batch, Literal[3], Height, Width], np.dtype[np.float64]],
     *,
-    method: str = 'k',
+    method: str = "k",
     k: float = 0.04,
     eps: float = 0.000001,
     sigma: int = 1,
@@ -145,7 +135,9 @@ def main():
     N_SAMPLES = 50000
 
     time_start = timer()
-    corners = detect_corners_harris(train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32), pickle_path="train_data_edges.npy")
+    corners = detect_corners_harris(
+        train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32), pickle_path="train_data_edges.npy"
+    )
     time_end = timer()
     logger.info(f"Time taken to detect edges: {time_end - time_start:.5f} seconds")
     # corners = np.load("train_data_edges.npy")
@@ -156,7 +148,6 @@ def main():
     image_originals.putalpha(180)
     image_originals.paste(image_corners, (0, 0), image_corners)
     image_originals.show()
-
 
 
 if __name__ == "__main__":

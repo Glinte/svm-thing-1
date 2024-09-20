@@ -26,14 +26,8 @@ def visualize_dataset_as_image(data: DataDict) -> ImageType:
     label_images = []
     for label_idx, _ in enumerate(label_names):
         # Choose 10 random images of the label
-        images_of_label = [
-            image
-            for image, image_label in zip(images, data["labels"])
-            if image_label == label_idx
-        ]
-        rand_10_images = [
-            Image.fromarray(i) for i in random.choices(images_of_label, k=10)
-        ]
+        images_of_label = [image for image, image_label in zip(images, data["labels"]) if image_label == label_idx]
+        rand_10_images = [Image.fromarray(i) for i in random.choices(images_of_label, k=10)]
         label_images.append(combine_images_horizontally(rand_10_images))
     return combine_images_vertically(label_images)
 
@@ -83,20 +77,14 @@ def visualize_images(
     if data[0].size == 1024:
         images = [Image.fromarray(i.reshape(32, 32)) for i in data]
     else:
-        images = [
-            Image.fromarray(i.astype(np.uint8).reshape(3, 32, 32).transpose(1, 2, 0))
-            for i in data
-        ]
+        images = [Image.fromarray(i.astype(np.uint8).reshape(3, 32, 32).transpose(1, 2, 0)) for i in data]
 
     total_images = len(images)
     rows = int(np.sqrt(total_images))
     cols = total_images // rows
 
     combined_image = combine_images_vertically(
-        [
-            combine_images_horizontally(images[i : i + cols])
-            for i in range(0, total_images, cols)
-        ]
+        [combine_images_horizontally(images[i : i + cols]) for i in range(0, total_images, cols)]
     )
     if show:
         combined_image.show()

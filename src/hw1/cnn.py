@@ -30,7 +30,15 @@ class CNN(nn.Module):
         return x
 
 
-def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, dataloader: DataLoader[torch.Tensor], epochs: int = 2, device: torch.device = torch.device('cuda'), save_to: str | None = None) -> None:
+def train(
+    net: nn.Module,
+    criterion: nn.Module,
+    optimizer: optim.Optimizer,
+    dataloader: DataLoader[torch.Tensor],
+    epochs: int = 2,
+    device: torch.device = torch.device("cuda"),
+    save_to: str | None = None,
+) -> None:
     """Train the model."""
     for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -52,7 +60,7 @@ def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, data
             # print statistics
             running_loss += loss.item()
             if i % 2000 == 1999:  # print every 2000 mini-batches
-                logger.info(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}')
+                logger.info(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}")
                 running_loss = 0.0
 
     if save_to is not None:
@@ -63,7 +71,7 @@ def train(net: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, data
 def main():
     logging.basicConfig(level=logging.INFO)
     net = CNN()
-    net.to(device=torch.device('cuda'))
+    net.to(device=torch.device("cuda"))
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
@@ -77,13 +85,13 @@ def main():
         for data in get_test_set_dataloader():
             images, labels = data
             # calculate outputs by running images through the network
-            outputs = net(images.to(device=torch.device('cuda')))
+            outputs = net(images.to(device=torch.device("cuda")))
             # the class with the highest energy is what we choose as prediction
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted.to(device=torch.device("cpu")) == labels).sum().item()
 
-    print(f'Accuracy of the network on the 10000 test images: {100 * correct // total} %')
+    print(f"Accuracy of the network on the 10000 test images: {100 * correct // total} %")
 
     # prepare to count predictions for each class
     correct_pred = {classname: 0 for classname in label_names}
@@ -93,7 +101,7 @@ def main():
     with torch.no_grad():
         for data in get_test_set_dataloader():
             images, labels = data
-            outputs = net(images.to(device=torch.device('cuda')))
+            outputs = net(images.to(device=torch.device("cuda")))
             _, predictions = torch.max(outputs, 1)
             # collect the correct predictions for each class
             for label, prediction in zip(labels, predictions):
@@ -104,8 +112,8 @@ def main():
     # print accuracy for each class
     for classname, correct_count in correct_pred.items():
         accuracy = 100 * float(correct_count) / total_pred[classname]
-        print(f'Accuracy for class: {classname:5s} is {accuracy:.1f} %')
+        print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
