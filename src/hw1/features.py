@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, overload, Literal
 
 import numpy as np
 from skimage import feature
-import cv2 as cv
 import torch
 
 from hw1 import train_data
