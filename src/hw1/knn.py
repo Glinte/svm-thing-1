@@ -111,7 +111,7 @@ def build_index(
 
     index = AnnoyIndex(3072, metric)
     data_hash = xxhash.xxh64(data).hexdigest()  # type: ignore
-    index_path = f"index_{metric}_{num_trees}_{data_hash}.ann"
+    index_path = f"../../data/annoy_index/index_{metric}_{num_trees}_{data_hash}.ann"
     if os.path.exists(index_path):
         index.load(index_path)
     else:
