@@ -1,26 +1,16 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Literal, Any
-
-import numpy as np
-from sklearn import metrics
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
+from typing import TYPE_CHECKING
 
 from hw1 import train_data, train_labels
+from hw1.cross_validation import find_best_k_with_cross_validation
 from hw1.knn import AnnoyClassifier
 
 if TYPE_CHECKING:
-    import numpy.typing as npt
-
-
-N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
+    pass
 
 logger = logging.getLogger(__name__)
-
-Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
-
 
 def find_best_k_with_cross_validation(
     X: npt.ArrayLike,

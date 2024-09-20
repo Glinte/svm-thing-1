@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from typing import Literal, Any, cast
 
 import numpy as np
@@ -8,8 +9,11 @@ from annoy import AnnoyIndex
 from numpy import typing as npt
 from sklearn.neighbors import KNeighborsClassifier
 
-from hw1.main import N_NEIGHBORS, Metric
 from hw1 import train_data, train_labels
+
+
+Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
+N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
 
 
 def classify(
