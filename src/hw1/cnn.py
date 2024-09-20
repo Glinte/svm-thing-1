@@ -67,8 +67,8 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    # train(net, criterion, optimizer, get_train_set_dataloader(), epochs=5, save_to=f"{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth", device=torch.device('cuda'))
-    net.load_state_dict(torch.load("202409191050_cnn_tutorial_5.pth", weights_only=True))
+    # train(net, criterion, optimizer, get_train_set_dataloader(), epochs=5, save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth", device=torch.device('cuda'))
+    net.load_state_dict(torch.load("../../data/models/202409191050_cnn_tutorial_5.pth", weights_only=True))
 
     correct = 0
     total = 0
