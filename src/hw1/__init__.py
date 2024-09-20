@@ -80,7 +80,7 @@ test_data_edges: np.ndarray[
 test_labels = _test_data["labels"]
 
 
-def get_train_set_dataloader(batch_size: int = 4) -> DataLoader[torch.Tensor]:
+def get_train_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
     """Get the CIFAR-10 training DataLoader."""
     transform = transforms.Compose(
         [
@@ -94,7 +94,7 @@ def get_train_set_dataloader(batch_size: int = 4) -> DataLoader[torch.Tensor]:
     return DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
 
-def get_test_set_dataloader(batch_size: int = 4) -> DataLoader[torch.Tensor]:
+def get_test_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
     """Get the CIFAR-10 test DataLoader."""
     transform = transforms.Compose(
         [
