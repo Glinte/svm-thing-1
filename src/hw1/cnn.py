@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 
 import numpy as np
 import torch
@@ -7,7 +8,7 @@ from torch import nn, optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from hw1 import get_test_set_dataloader, label_names
+from hw1 import get_test_set_dataloader, label_names, get_train_set_dataloader
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ def train(
     save_to: str | None = None,
 ) -> None:
     """Train the model."""
+    net.to(device=device)
     for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
         for i, data in enumerate(dataloader):
@@ -73,7 +75,6 @@ def train(
 def main():
     logging.basicConfig(level=logging.INFO)
     net = CNN()
-    net.to(device=torch.device("cuda"))
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
