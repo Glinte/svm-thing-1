@@ -119,7 +119,7 @@ def main():
         torch.tensor(test_labels, dtype=torch.int64, device=device),
     )
     print(f"Accuracy: {accuracy}")
-    model.save(f"svm_base_{n_iters}.pth")
+    model.save(f"../../data/models/svm_base_{n_iters}.pth")
 
 
 if __name__ == "__main__":
