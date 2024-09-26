@@ -42,7 +42,7 @@ def train(
     net: nn.Module,
     criterion: nn.Module,
     optimizer: optim.Optimizer,
-    dataloader: DataLoader[torch.Tensor],
+    dataloader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
     epochs: int = 2,
     device: torch.device = torch.device("cuda"),
     save_to: str | None = None,
