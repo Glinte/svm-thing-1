@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import pickle
 from os import PathLike
+from pathlib import Path
 
-from typing import TypedDict, Literal
+from typing import TypedDict, Literal, Callable, Any
 
 import numpy as np
 import torch
 import torchvision
+from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
@@ -76,15 +78,62 @@ test_data_edges: np.ndarray[tuple[N_IMAGES, Literal[32], Literal[32]], np.dtype[
 test_labels = _test_data["labels"]
 
 
-def get_train_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
+class CustomCIFAR10(torchvision.datasets.CIFAR10):
+    """CIFAR-10 dataset with additional custom features."""
+
+    def __init__(
+        self,
+        root: str | Path,
+        train: bool = True,
+        transform: Callable[..., Any] | None = None,
+        target_transform: Callable[..., Any] | None = None,
+        download: bool = False,
+        additional_features: list[Literal["edges", "corners"]] | None = None,
+    ) -> None:
+        super().__init__(root, train=train, transform=transform, target_transform=target_transform, download=download)
+        self.additional_features = additional_features
+        if additional_features is not None:
+            if "edges" in additional_features:
+                edges = train_data_edges if train else test_data_edges
+                self.data = np.concatenate((self.data, edges.reshape(-1, 1, 32, 32).transpose(0, 2, 3, 1)), axis=3)
+            if "corners" in additional_features:
+                raise NotImplementedError("Corners feature is not implemented yet.")
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, int]:
+        """
+        Args:
+            index (int): Index
+
+        Returns:
+            tuple: (image, target) where target is index of the target class.
+        """
+        img, target = self.data[index], self.targets[index]
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
+
+
+def get_train_set_dataloader(
+    batch_size: int = 16, additional_features: list[Literal["edges", "corners"]] | None = None
+) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
     """Get the CIFAR-10 training DataLoader."""
+    channels = 3 + len(additional_features or [])
+    normalize = transforms.Normalize((0.5,) * channels, (0.5,) * channels)
+
     transform = transforms.Compose(
         [
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            normalize,
         ]
     )
-    trainset = torchvision.datasets.CIFAR10(root="../../data", train=True, download=False, transform=transform)
+    trainset = CustomCIFAR10(
+        root="../../data", train=True, download=False, transform=transform, additional_features=additional_features
+    )
     return DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
 
@@ -96,5 +145,18 @@ def get_test_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
         ]
     )
-    testset = torchvision.datasets.CIFAR10(root="../../data", train=False, download=False, transform=transform)
+    testset = CustomCIFAR10(root="../../data", train=False, download=False, transform=transform)
     return DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
+
+
+def main():
+    train_loader = get_train_set_dataloader(batch_size=16, additional_features=["edges"])
+    for i, data in enumerate(train_loader):
+        inputs, labels = data
+        print(inputs.shape, labels.shape)
+        break
+
+
+if __name__ == "__main__":
+    main()
+    main()
