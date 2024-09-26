@@ -95,7 +95,7 @@ class CustomCIFAR10(torchvision.datasets.CIFAR10):
         if additional_features is not None:
             if "edges" in additional_features:
                 edges = train_data_edges if train else test_data_edges
-                self.data = np.concatenate((self.data, edges.reshape(-1, 1, 32, 32).transpose(0, 2, 3, 1)), axis=3)
+                self.data = np.concatenate((self.data, edges.reshape(-1, 1, 32, 32).transpose(0, 2, 3, 1)), axis=3, dtype=np.float32)
             if "corners" in additional_features:
                 raise NotImplementedError("Corners feature is not implemented yet.")
 
