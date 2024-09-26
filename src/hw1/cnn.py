@@ -21,7 +21,7 @@ class CNN(nn.Module):
             channels: Number of channels in the input images.
         """
         super().__init__()
-        self.conv1 = nn.Conv2d(channels, 6, 5)
+        self.conv1 = nn.Conv2d(channels, channels * 2, 5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(channels * 2, 16, 5)
         self.fc1 = nn.Linear(16 * 5 * 5, 120)
@@ -77,12 +77,20 @@ def train(
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    net = CNN()
+    net = CNN(channels=4)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    # train(net, criterion, optimizer, get_train_set_dataloader(), epochs=5, save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth", device=torch.device('cuda'))
-    net.load_state_dict(torch.load("../../data/models/202409191050_cnn_tutorial_5.pth", weights_only=True))
+    train(
+        net,
+        criterion,
+        optimizer,
+        get_train_set_dataloader(additional_features=["edges"]),
+        epochs=5,
+        save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth",
+        device=torch.device("cuda"),
+    )
+    # net.load_state_dict(torch.load("../../data/models/202409191050_cnn_tutorial_5.pth", weights_only=True))
 
     y_pred = np.array([])
     y_true = np.array([])
