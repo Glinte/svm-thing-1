@@ -95,7 +95,9 @@ class CustomCIFAR10(torchvision.datasets.CIFAR10):
         if additional_features is not None:
             if "edges" in additional_features:
                 edges = train_data_edges if train else test_data_edges
-                self.data = np.concatenate((self.data, edges.reshape(-1, 1, 32, 32).transpose(0, 2, 3, 1)), axis=3, dtype=np.float32)
+                self.data = np.concatenate(
+                    (self.data, edges.reshape(-1, 1, 32, 32).transpose(0, 2, 3, 1)), axis=3, dtype=np.float32
+                )
             if "corners" in additional_features:
                 raise NotImplementedError("Corners feature is not implemented yet.")
 
@@ -137,15 +139,20 @@ def get_train_set_dataloader(
     return DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
 
 
-def get_test_set_dataloader(batch_size: int = 16) -> DataLoader[torch.Tensor]:
+def get_test_set_dataloader(
+    batch_size: int = 16, additional_features: list[Literal["edges", "corners"]] | None = None
+) -> DataLoader[torch.Tensor]:
     """Get the CIFAR-10 test DataLoader."""
+    channels = 3 + len(additional_features or [])
+    normalize = transforms.Normalize((0.5,) * channels, (0.5,) * channels)
+
     transform = transforms.Compose(
         [
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            normalize,
         ]
     )
-    testset = CustomCIFAR10(root="../../data", train=False, download=False, transform=transform)
+    testset = CustomCIFAR10(root="../../data", train=False, download=False, transform=transform, additional_features=additional_features)
     return DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
 

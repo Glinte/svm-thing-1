@@ -96,7 +96,7 @@ def main():
     y_true = np.array([])
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
-        for data in get_test_set_dataloader():
+        for data in get_test_set_dataloader(additional_features=["edges"]):
             images, labels = data
             # calculate outputs by running images through the network
             outputs = net(images.to(device=torch.device("cuda")))
