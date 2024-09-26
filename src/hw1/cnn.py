@@ -51,10 +51,8 @@ def train(
     net.to(device=device)
     for epoch in range(epochs):  # loop over the dataset multiple times
         running_loss = 0.0
-        for i, data in enumerate(dataloader):
+        for i, data in enumerate[tuple[torch.Tensor, torch.Tensor]](dataloader):
             # get the inputs; data is a list of [inputs, labels]
-            inputs: torch.Tensor
-            labels: torch.Tensor
             inputs, labels = data
 
             # zero the parameter gradients
