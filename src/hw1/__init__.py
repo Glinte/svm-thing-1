@@ -121,7 +121,7 @@ class CustomCIFAR10(torchvision.datasets.CIFAR10):
 
 
 def get_train_set_dataloader(
-    batch_size: int = 16, additional_features: list[Literal["edges", "corners"]] | None = None
+    batch_size: int = 4, additional_features: list[Literal["edges", "corners"]] | None = None
 ) -> DataLoader[tuple[torch.Tensor, torch.Tensor]]:
     """Get the CIFAR-10 training DataLoader."""
     channels = 3 + len(additional_features or [])
@@ -140,7 +140,7 @@ def get_train_set_dataloader(
 
 
 def get_test_set_dataloader(
-    batch_size: int = 16, additional_features: list[Literal["edges", "corners"]] | None = None
+    batch_size: int = 4, additional_features: list[Literal["edges", "corners"]] | None = None
 ) -> DataLoader[torch.Tensor]:
     """Get the CIFAR-10 test DataLoader."""
     channels = 3 + len(additional_features or [])
@@ -157,7 +157,7 @@ def get_test_set_dataloader(
 
 
 def main():
-    train_loader = get_train_set_dataloader(batch_size=16, additional_features=["edges"])
+    train_loader = get_train_set_dataloader(batch_size=4, additional_features=["edges"])
     for i, data in enumerate(train_loader):
         inputs, labels = data
         print(inputs.shape, labels.shape)
