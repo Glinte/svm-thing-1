@@ -10,7 +10,6 @@ from skimage import feature
 import torch
 
 from hw1 import train_data
-from hw1.visualization import visualize_images
 
 if TYPE_CHECKING:
     pass
@@ -128,26 +127,17 @@ def detect_corners_harris[Batch: int, Height: int, Width: int](
 
 def main():
     """Quick testing, not part of the library."""
-    from timeit import default_timer as timer
-
     logging.basicConfig(level=logging.INFO)
 
-    N_SAMPLES = 50000
-
-    time_start = timer()
-    corners = detect_corners_harris(
-        train_data[:N_SAMPLES].reshape(N_SAMPLES, 3, 32, 32), pickle_path="train_data_edges.npy"
+    edges = detect_edges_canny(
+        train_data.reshape(-1, 3, 32, 32), sigma=0.75, pickle_path="train_data_edges.npy", low_threshold=80, high_threshold=160
     )
-    time_end = timer()
-    logger.info(f"Time taken to detect edges: {time_end - time_start:.5f} seconds")
-    # corners = np.load("train_data_edges.npy")
 
-    image_corners = visualize_images(corners[:100].astype(np.bool_), show=False)
-    image_originals = visualize_images(train_data[:100], show=False)
-    image_corners.putalpha(100)
-    image_originals.putalpha(180)
-    image_originals.paste(image_corners, (0, 0), image_corners)
-    image_originals.show()
+    corners = np.load("train_data_corners.npy")
+
+    # image_edges = visualize_images(train_data_edges[:100].astype(np.bool_), show=False)
+    # image_corners = visualize_images(corners[:100].astype(np.bool_), show=False)
+    # visualize_images(corners[:100].astype(np.bool_), show=True, overlay=train_data[:100])
 
 
 if __name__ == "__main__":

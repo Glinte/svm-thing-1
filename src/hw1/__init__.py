@@ -9,7 +9,6 @@ from typing import TypedDict, Literal, Callable, Any
 import numpy as np
 import torch
 import torchvision
-from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
@@ -157,13 +156,8 @@ def get_test_set_dataloader(
 
 
 def main():
-    train_loader = get_train_set_dataloader(batch_size=4, additional_features=["edges"])
-    for i, data in enumerate(train_loader):
-        inputs, labels = data
-        print(inputs.shape, labels.shape)
-        break
+    pass
 
 
 if __name__ == "__main__":
-    main()
     main()
