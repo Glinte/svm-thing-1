@@ -9,7 +9,8 @@ import numpy as np
 from skimage import feature
 import torch
 
-from hw1 import train_data
+from hw1 import train_data, train_data_edges
+from hw1.visualization import visualize_images
 
 if TYPE_CHECKING:
     pass
@@ -129,15 +130,12 @@ def main():
     """Quick testing, not part of the library."""
     logging.basicConfig(level=logging.INFO)
 
-    edges = detect_edges_canny(
-        train_data.reshape(-1, 3, 32, 32), sigma=0.75, pickle_path="train_data_edges.npy", low_threshold=80, high_threshold=160
-    )
+    # edges = detect_edges_canny(
+    #     train_data.reshape(-1, 3, 32, 32), sigma=0.75, pickle_path="train_data_edges.npy", low_threshold=80, high_threshold=160
+    # )
+    # corners = np.load("train_data_corners.npy")
 
-    corners = np.load("train_data_corners.npy")
-
-    # image_edges = visualize_images(train_data_edges[:100].astype(np.bool_), show=False)
-    # image_corners = visualize_images(corners[:100].astype(np.bool_), show=False)
-    # visualize_images(corners[:100].astype(np.bool_), show=True, overlay=train_data[:100])
+    visualize_images(train_data_edges[:100].astype(np.bool_), show=True, overlay=train_data[:100])
 
 
 if __name__ == "__main__":
