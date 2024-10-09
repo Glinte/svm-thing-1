@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from typing import Any
 
 import numpy as np
 import torch
@@ -37,66 +38,66 @@ class CNN(nn.Module):
         x = self.fc3(x)
         return x
 
+    def train_loop(
+        self,
+        criterion: nn.Module,
+        optimizer: optim.Optimizer,
+        dataloader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
+        epochs: int = 2,
+        device: torch.device = torch.device("cuda"),
+        save_to: str | None = None,
+    ) -> None:
+        """Train the model."""
+        self.to(device=device)
+        for epoch in range(epochs):  # loop over the dataset multiple times
+            running_loss = 0.0
+            for i, data in enumerate[tuple[torch.Tensor, torch.Tensor]](dataloader):
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, labels = data
 
-def train(
-    net: nn.Module,
-    criterion: nn.Module,
-    optimizer: optim.Optimizer,
-    dataloader: DataLoader[tuple[torch.Tensor, torch.Tensor]],
-    epochs: int = 2,
-    device: torch.device = torch.device("cuda"),
-    save_to: str | None = None,
-) -> None:
-    """Train the model."""
-    net.to(device=device)
-    for epoch in range(epochs):  # loop over the dataset multiple times
-        running_loss = 0.0
-        for i, data in enumerate[tuple[torch.Tensor, torch.Tensor]](dataloader):
-            # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+                # forward + backward + optimize
+                outputs = self(inputs.to(device=device))
+                loss = criterion(outputs, labels.to(device=device))
+                loss.backward()
+                optimizer.step()
 
-            # forward + backward + optimize
-            outputs = net(inputs.to(device=device))
-            loss = criterion(outputs, labels.to(device=device))
-            loss.backward()
-            optimizer.step()
+                # print statistics
+                running_loss += loss.item()
+                if i % 2000 == 1999:  # print every 2000 mini-batches
+                    logger.info(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}")
+                    running_loss = 0.0
 
-            # print statistics
-            running_loss += loss.item()
-            if i % 2000 == 1999:  # print every 2000 mini-batches
-                logger.info(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 2000:.3f}")
-                running_loss = 0.0
-
-    if save_to is not None:
-        torch.save(net.state_dict(), save_to)
-        logger.info(f"Saved model to {save_to}")
+        if save_to is not None:
+            torch.save(self.state_dict(), save_to)
+            logger.info(f"Saved model to {save_to}")
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    net = CNN(channels=4)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    train(
-        net,
-        criterion,
-        optimizer,
-        get_train_set_dataloader(additional_features=["edges"]),
-        epochs=5,
-        save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_tutorial_2.pth",
+    additional_features: Any = []  # Any to avoid type checking error
+
+    net = CNN(channels=3+len(additional_features))
+    net.to(device=torch.device("cuda"))
+
+    net.train_loop(
+        criterion=nn.CrossEntropyLoss(),
+        optimizer=optim.Adam(net.parameters(), lr=0.001),
+        dataloader=get_train_set_dataloader(additional_features=additional_features),
+        epochs=2,
+        save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_Adam_2.pth",
         device=torch.device("cuda"),
     )
-    # net.load_state_dict(torch.load("../../data/models/202409191050_cnn_tutorial_5.pth", weights_only=True))
+    # net.load_state_dict(torch.load("../../data/models/cnn_tutorial_2.pth", weights_only=True))
 
     y_pred = np.array([])
     y_true = np.array([])
     # since we're not training, we don't need to calculate the gradients for our outputs
     with torch.no_grad():
-        for data in get_test_set_dataloader(additional_features=["edges"]):
+        for data in get_test_set_dataloader(additional_features=additional_features):
             images, labels = data
             # calculate outputs by running images through the network
             outputs = net(images.to(device=torch.device("cuda")))
