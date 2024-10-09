@@ -92,9 +92,7 @@ def visualize_images(
     )
     if overlay is not None:
         overlay_image = visualize_images(overlay, show=False, overlay=None)
-        combined_image = Image.blend(combined_image, overlay_image, alpha=0.3)
-        combined_image.putalpha(160)
-        overlay_image.paste(combined_image, (0, 0), combined_image)
+        combined_image = Image.blend(combined_image, overlay_image, alpha=0.6)
     if show:
         combined_image.show()
     return combined_image
