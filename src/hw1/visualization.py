@@ -12,7 +12,7 @@ from beartype.vale import Is
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 
-from hw1 import label_names, train_data, train_labels
+from hw1 import label_names, train_data, train_labels, train_data_edges
 from src.hw1 import DataDict
 
 if TYPE_CHECKING:
@@ -68,6 +68,10 @@ def visualize_images(
     ],
     *,
     show: bool = True,
+    overlay: Annotated[
+        np.ndarray[Any, np.dtype[Any]],
+        Is[lambda data: data[0].size == 1024 or data[0].size == 3072],
+    ] | None = None,
 ) -> ImageType:
     """Visualize multiple 32x32 images. Images can be either grayscale or RGB.
 
@@ -84,8 +88,13 @@ def visualize_images(
     cols = total_images // rows
 
     combined_image = combine_images_vertically(
-        [combine_images_horizontally(images[i : i + cols]) for i in range(0, total_images, cols)]
+        [combine_images_horizontally(images[i: i + cols]) for i in range(0, total_images, cols)]
     )
+    if overlay is not None:
+        overlay_image = visualize_images(overlay, show=False, overlay=None)
+        combined_image = Image.blend(combined_image, overlay_image, alpha=0.3)
+        combined_image.putalpha(160)
+        overlay_image.paste(combined_image, (0, 0), combined_image)
     if show:
         combined_image.show()
     return combined_image
@@ -160,7 +169,7 @@ def PCA_visualization(X: MatrixLike, y: npt.ArrayLike) -> None:
 
 
 def main():
-    PCA_visualization(train_data[:1000], train_labels[:1000])
+    visualize_images(train_data_edges[:100].astype(np.bool_), show=True)
 
 
 if __name__ == "__main__":
