@@ -9,7 +9,7 @@ import numpy as np
 from skimage import feature
 import torch
 
-from hw1 import train_data, train_data_edges
+from hw1 import train_data, train_data_edges, test_data
 from hw1.visualization import visualize_images
 
 if TYPE_CHECKING:
@@ -133,9 +133,9 @@ def main():
     # edges = detect_edges_canny(
     #     train_data.reshape(-1, 3, 32, 32), sigma=0.75, pickle_path="train_data_edges.npy", low_threshold=80, high_threshold=160
     # )
-    # corners = np.load("train_data_corners.npy")
+    corners = detect_corners_harris(test_data.reshape(-1, 3, 32, 32), pickle_path="test_data_corners.npy")
 
-    visualize_images(train_data_edges[:100].astype(np.bool_), show=True, overlay=train_data[:100])
+    visualize_images(corners[:16].astype(np.bool_), show=True, overlay=train_data[:16])
 
 
 if __name__ == "__main__":
