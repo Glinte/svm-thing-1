@@ -60,6 +60,9 @@ train_data: Data = np.concatenate(
 train_data_edges: np.ndarray[tuple[N_IMAGES, Literal[32], Literal[32]], np.dtype[np.bool_]] = np.load(
     "train_data_edges.npy"
 )
+train_data_corners: np.ndarray[tuple[N_IMAGES, Literal[32], Literal[32]], np.dtype[np.bool_]] = np.load(
+    "train_data_corners.npy"
+)
 train_labels = np.concatenate(
     (
         data_1["labels"],
@@ -73,6 +76,9 @@ _test_data = unpickle_data("../../data/cifar-10-batches-py/test_batch")
 test_data: Data = _test_data["data"].astype(np.float64)
 test_data_edges: np.ndarray[tuple[N_IMAGES, Literal[32], Literal[32]], np.dtype[np.bool_]] = np.load(
     "test_data_edges.npy"
+)
+test_data_corners: np.ndarray[tuple[N_IMAGES, Literal[32], Literal[32]], np.dtype[np.bool_]] = np.load(
+    "test_data_corners.npy"
 )
 test_labels = _test_data["labels"]
 
