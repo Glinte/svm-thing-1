@@ -71,7 +71,8 @@ def visualize_images(
     overlay: Annotated[
         np.ndarray[Any, np.dtype[Any]],
         Is[lambda data: data[0].size == 1024 or data[0].size == 3072],
-    ] | None = None,
+    ]
+    | None = None,
 ) -> ImageType:
     """Visualize multiple 32x32 images. Images can be either grayscale or RGB.
 
@@ -88,7 +89,7 @@ def visualize_images(
     cols = total_images // rows
 
     combined_image = combine_images_vertically(
-        [combine_images_horizontally(images[i: i + cols]) for i in range(0, total_images, cols)]
+        [combine_images_horizontally(images[i : i + cols]) for i in range(0, total_images, cols)]
     )
     if overlay is not None:
         overlay_image = visualize_images(overlay, show=False, overlay=None)

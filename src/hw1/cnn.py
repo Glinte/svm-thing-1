@@ -80,7 +80,7 @@ def main():
 
     additional_features: Any = []  # Any to avoid type checking error
 
-    net = CNN(channels=3+len(additional_features))
+    net = CNN(channels=3 + len(additional_features))
     net.to(device=torch.device("cuda"))
 
     net.train_loop(
