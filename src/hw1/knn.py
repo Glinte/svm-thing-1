@@ -9,8 +9,7 @@ from annoy import AnnoyIndex
 from numpy import typing as npt
 from sklearn.neighbors import KNeighborsClassifier
 
-from hw1 import train_data, train_labels
-
+from hw1 import train_data, train_labels, train_data_edges
 
 Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
 N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
@@ -95,7 +94,7 @@ def build_index(
 ) -> AnnoyIndex:
     """Build an Annoy index if it doesn't exist, otherwise simply loads it."""
 
-    index = AnnoyIndex(3072, metric)
+    index = AnnoyIndex(np.array(data).shape[1], metric)
     data_hash = xxhash.xxh64(data).hexdigest()  # type: ignore
     index_path = f"../../data/annoy_index/index_{metric}_{num_trees}_{data_hash}.ann"
     if os.path.exists(index_path):
@@ -108,3 +107,19 @@ def build_index(
         if save_index:
             index.save(index_path)
     return index
+
+
+def main():
+    """Quick testing, not part of the library."""
+    X = np.concatenate((train_data, np.expand_dims(train_data_edges, axis=1)), axis=1)
+    X = X.reshape(X.shape[0], -1)  # Flatten the data
+    y = train_labels
+    classifier = AnnoyClassifier(weights="distance", metric="euclidean", num_trees=20, n_neighbors=3, save_index=True)
+    classifier.fit(X, y)
+    y_pred = classifier.predict(X)
+    accuracy = np.mean(y_pred == y)
+    print(f"Accuracy: {accuracy}")
+
+
+if __name__ == "__main__":
+    main()
