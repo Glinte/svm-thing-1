@@ -9,7 +9,7 @@ from annoy import AnnoyIndex
 from numpy import typing as npt
 from sklearn.neighbors import KNeighborsClassifier
 
-from hw1 import train_data, train_labels, train_data_edges
+from hw1 import train_data, train_labels, train_data_edges, test_labels, test_data_edges, test_data
 
 Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
 N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
@@ -78,7 +78,9 @@ class AnnoyClassifier:
 
         if include_distances:
             # Weighted voting
-            weights = 1 / np.array(distances)  # pyright: ignore[reportPossiblyUnboundVariable]
+            distances = np.array(distances)  # pyright: ignore[reportPossiblyUnboundVariable]
+            distances[distances == 0] = 1e-10  # Avoid division by zero
+            weights = 1 / distances
             pred = np.argmax(np.bincount(nn_labels, weights=weights))
         else:
             pred = np.argmax(np.bincount(nn_labels))
@@ -116,8 +118,11 @@ def main():
     y = train_labels
     classifier = AnnoyClassifier(weights="distance", metric="euclidean", num_trees=20, n_neighbors=3, save_index=True)
     classifier.fit(X, y)
-    y_pred = classifier.predict(X)
-    accuracy = np.mean(y_pred == y)
+    test_X = np.concatenate((test_data, np.expand_dims(test_data_edges, axis=1)), axis=1)
+    test_X = test_X.reshape(test_X.shape[0], -1)  # Flatten the data
+    test_y = test_labels
+    y_pred = classifier.predict(test_X)
+    accuracy = np.mean(y_pred == test_y)
     print(f"Accuracy: {accuracy}")
 
 
