@@ -78,20 +78,20 @@ class CNN(nn.Module):
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    additional_features: Any = []  # Any to avoid type checking error
+    additional_features: Any = ["edges"]  # Any to avoid type checking error
 
     net = CNN(channels=3 + len(additional_features))
     net.to(device=torch.device("cuda"))
 
+    net.load_state_dict(torch.load("../../data/models/202410120858_cnn_Adam_5_edges(39).pth", weights_only=True))
     net.train_loop(
         criterion=nn.CrossEntropyLoss(),
         optimizer=optim.Adam(net.parameters(), lr=0.001),
         dataloader=get_train_set_dataloader(additional_features=additional_features),
-        epochs=2,
-        save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_Adam_2.pth",
+        epochs=35,
+        save_to=f"../../data/models/{datetime.now(tz=timezone.utc).strftime("%Y%m%d%H%M")}_cnn_Adam_40_edges.pth",
         device=torch.device("cuda"),
     )
-    # net.load_state_dict(torch.load("../../data/models/cnn_tutorial_2.pth", weights_only=True))
 
     y_pred = np.array([])
     y_true = np.array([])
