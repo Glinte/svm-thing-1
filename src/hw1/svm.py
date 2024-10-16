@@ -1,8 +1,10 @@
 import logging
+from typing import Literal
 
 import numpy as np
 import torch
 from sklearn import metrics
+from sklearn.decomposition import PCA
 from torch import nn
 from torch.optim.adam import Adam
 
@@ -12,7 +14,8 @@ from hw1 import (
     test_data as test_data_raw,
     test_labels,
     train_data_edges,
-    test_data_edges, label_names,
+    test_data_edges,
+    label_names,
 )
 
 
@@ -86,20 +89,20 @@ def main():
     n_iters = 20000
 
     model = SVM(n_features, n_classes)
-    train_data = np.concatenate(
+    train_data = PCA(n_components=50).fit_transform(np.concatenate(
         (
             # train_data_raw.reshape(50000, 3, 32, 32),
             train_data_edges.reshape(50000, 1, 32, 32),
         ),
         axis=1,
-    )
-    test_data = np.concatenate(
+    ))
+    test_data = PCA(n_components=50).fit_transform(np.concatenate(
         (
             # test_data_raw.reshape(10000, 3, 32, 32),
             test_data_edges.reshape(10000, 1, 32, 32),
         ),
         axis=1,
-    )
+    ))
 
     model = train_svm(
         model,
