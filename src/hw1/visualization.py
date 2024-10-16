@@ -11,6 +11,7 @@ from beartype import beartype
 from beartype.vale import Is
 from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 from hw1 import label_names, train_data, train_labels, train_data_edges
 from src.hw1 import DataDict
@@ -168,8 +169,37 @@ def PCA_visualization(X: MatrixLike, y: npt.ArrayLike) -> None:
 
 
 def main():
-    visualize_images(train_data_edges[:100].astype(np.bool_), show=True)
+    data_slice = slice(0, 50000)
+    train_data_flat = train_data.reshape(train_data.shape[0], -1)
+    train_data_flat_reduced = PCA(n_components=200).fit_transform(train_data_flat[data_slice])
+    X_embedded = TSNE(verbose=2, n_iter=5000, min_grad_norm=3e-5, n_jobs=-1).fit_transform(train_data_flat_reduced)
 
+    colors = [
+        "navy",
+        "turquoise",
+        "darkorange",
+        "red",
+        "green",
+        "blue",
+        "purple",
+        "yellow",
+        "black",
+        "pink",
+    ]
+
+    plt.figure(figsize=(10, 10))
+    for i, target_name in enumerate(label_names):
+        plt.scatter(
+            X_embedded[train_labels[data_slice] == i, 0],
+            X_embedded[train_labels[data_slice] == i, 1],
+            s=10,
+            color=colors[i],
+            label=target_name,
+            alpha=0.4,
+        )
+    plt.legend(loc="best", shadow=False, scatterpoints=1)
+    plt.title("t-SNE of CIFAR-10 dataset")
+    plt.show()
 
 if __name__ == "__main__":
     main()
