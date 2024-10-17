@@ -7,9 +7,10 @@ import numpy as np
 import xxhash
 from annoy import AnnoyIndex
 from numpy import typing as npt
+from sklearn import metrics
 from sklearn.neighbors import KNeighborsClassifier
 
-from hw1 import train_data, train_labels, train_data_edges, test_labels, test_data_edges, test_data
+from hw1 import train_data, train_labels, train_data_edges, test_labels, test_data_edges, test_data, label_names
 
 Metric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
 N_NEIGHBORS = 3  # Experimentally determined to be the best number of neighbors
@@ -120,10 +121,8 @@ def main():
     classifier.fit(X, y)
     test_X = np.concatenate((test_data, np.expand_dims(test_data_edges, axis=1)), axis=1)
     test_X = test_X.reshape(test_X.shape[0], -1)  # Flatten the data
-    test_y = test_labels
     y_pred = classifier.predict(test_X)
-    accuracy = np.mean(y_pred == test_y)
-    print(f"Accuracy: {accuracy}")
+    print(metrics.classification_report(test_labels, y_pred, digits=4, target_names=label_names))
 
 
 if __name__ == "__main__":
